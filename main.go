@@ -1,12 +1,20 @@
 package main
 
 import (
-	"fmt"
+	_ "embed"
+	"hello/config"
+	"hello/input"
+	"hello/screens"
+	"hello/uilib"
+	"log"
 	"os"
+	"runtime/debug"
 
 	"github.com/veandco/go-sdl2/sdl"
-	"github.com/veandco/go-sdl2/ttf"
 )
+
+//go:embed assets/NotoSans_Condensed-SemiBold.ttf
+var NotoSans []byte
 
 const (
 	fontPath        = "./test.ttf"
@@ -32,98 +40,104 @@ func clamp(value, min, max int32) int32 {
 	return value
 }
 
-func run() (err error) {
-	var window *sdl.Window
-	var font *ttf.Font
-	var surface *sdl.Surface
-	var text *sdl.Surface
-	var content = "Hello, World!"
+func main() {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("Unhandled error: %v\n", r)
+			log.Println("Stack trace:")
+			debug.PrintStack()
+			os.Exit(-1)
+		}
+	}()
 
-	if err = ttf.Init(); err != nil {
-		return
-	}
-	defer ttf.Quit()
+	config.InitVars()
 
-	if err = sdl.Init(sdl.INIT_GAMECONTROLLER); err != nil {
-		return
-	}
-	defer sdl.Quit()
-
-	// Create a window for us to draw the text on
-	if window, err = sdl.CreateWindow("Drawing text", sdl.WINDOWPOS_CENTERED, sdl.WINDOWPOS_CENTERED, WinWidth, WinHeight, sdl.WINDOW_SHOWN); err != nil {
-		return
+	if err := uilib.InitSDL(); err != nil {
+		panic(err)
 	}
 
-	window.SetAlwaysOnTop(true)
-	window.SetKeyboardGrab(true)
-	window.Raise()
+	if err := uilib.InitTTF(); err != nil {
+		panic(err)
+	}
 
+	if err := uilib.InitFont(NotoSans, &config.BodyFont, 24); err != nil {
+		panic(err)
+	}
+
+	if err := uilib.InitFont(NotoSans, &config.BodyBigFont, 58); err != nil {
+		panic(err)
+	}
+
+	if err := uilib.InitFont(NotoSans, &config.LongTextFont, 24); err != nil {
+		panic(err)
+	}
+
+	if err := uilib.InitFont(NotoSans, &config.HeaderFont, 28); err != nil {
+		panic(err)
+	}
+
+	window, err := sdl.CreateWindow("Systems List", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, config.ScreenWidth, config.ScreenHeight, sdl.WINDOW_SHOWN)
+	if err != nil {
+		panic(err)
+	}
 	defer window.Destroy()
 
-	if font, err = ttf.OpenFont(fontPath, fontSize); err != nil {
-		return
+	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
+	if err != nil {
+		panic(err)
 	}
-	defer font.Close()
+	defer renderer.Destroy()
 
-	print := func(texts []Text) {
-		if surface, err = window.GetSurface(); err != nil {
-			return
-		}
-		surface.FillRect(nil, 0x000000)
-		surface.Free()
-
-		for _, t := range texts {
-			if text, err = font.RenderUTF8Blended(t.Content, sdl.Color{R: 255, G: 120, B: 75, A: 255}); err != nil {
-				return
-			}
-			defer text.Free()
-			if err = text.Blit(nil, surface, &sdl.Rect{X: clamp(t.X-(text.W/2), 0, WinWidth), Y: clamp(t.Y-(text.H/2), 0, WinHeight), W: 0, H: 0}); err != nil {
-				return
-			}
-		}
-
-		// Update the window surface with what we have drawn
-		window.UpdateSurface()
+	mainScreen, err := screens.NewMainScreen(renderer)
+	if err != nil {
+		panic(err)
 	}
 
-	startTime := sdl.GetTicks64()
-	// Run infinite loop until user closes the window
+	scrapingScreen, err := screens.NewScrapingScreen(renderer)
+	if err != nil {
+		panic(err)
+	}
+
+	screensMap := map[string]func(){
+		"main_screen":     mainScreen.Draw,
+		"scraping_screen": scrapingScreen.Draw,
+	}
+
+	inputHandlers := map[string]func(input.InputEvent){
+		"main_screen":     mainScreen.HandleInput,
+		"scraping_screen": scrapingScreen.HandleInput,
+	}
+
+	input.StartListening()
+
 	running := true
 	for running {
-		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
-			switch e := event.(type) {
+
+		for {
+			event := sdl.PollEvent()
+			if event == nil {
+				break
+			}
+
+			switch event.(type) {
 			case *sdl.QuitEvent:
 				running = false
-				sdl.Quit()
-			case *sdl.KeyboardEvent:
-				if e.Type == sdl.KEYUP {
-					content = sdl.GetKeyName(e.Keysym.Sym)
-				}
-			default:
-				content = fmt.Sprintf("Unknown event: %T", e)
 			}
 		}
 
-		elapsedTime := sdl.GetTicks64() - startTime
+		select {
+		case inputEvent := <-input.InputChannel:
+			if handler, ok := inputHandlers[config.CurrentScreen]; ok {
+				handler(inputEvent)
+			}
+		default:
+			// No event received
+		}
 
-		print(
-			[]Text{
-				{content, CenterX, CenterY - 100},
-				{fmt.Sprintf("Elapsed time: %d", elapsedTime), CenterX, CenterY},
-			},
-		)
-		if elapsedTime >= 15000 {
-			running = false
+		if drawFunc, ok := screensMap[config.CurrentScreen]; ok {
+			drawFunc()
 		}
 
 		sdl.Delay(16)
-	}
-
-	return
-}
-
-func main() {
-	if err := run(); err != nil {
-		os.Exit(1)
 	}
 }

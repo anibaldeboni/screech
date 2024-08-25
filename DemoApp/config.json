@@ -1,6 +1,0 @@
-{
-    "label": "DemoApp",
-    "icon": "icon.png",
-    "launch": "launch.sh",
-    "description": "SDL2 Demo App"
-}

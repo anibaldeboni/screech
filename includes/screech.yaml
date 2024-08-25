@@ -1,0 +1,10 @@
+screen_width: 1280
+screen_height: 720
+emulators_dir: /mnt/SDCARD/Roms/
+screenscraper:
+  username: my_username
+  password: my_password
+thumbnail:
+  width: 400
+  height: 580
+  dir: /mnt/SDCARD/Imgs/$SYSTEM$/

@@ -1,6 +1,6 @@
 {
-    "label": "DemoApp",
+    "label": "Screech",
     "icon": "icon.png",
     "launch": "launch.sh",
-    "description": "SDL2 Demo App"
+    "description": "Game cover scraper"
 }
