@@ -4,13 +4,14 @@ import (
 	"crypto/sha1"
 	"encoding/json"
 	"fmt"
-	"hello/config"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"regexp"
+
+	"github.com/anibaldeboni/screech/config"
 )
 
 var (

@@ -2,13 +2,14 @@ package main
 
 import (
 	_ "embed"
-	"hello/config"
-	"hello/input"
-	"hello/screens"
-	"hello/uilib"
 	"log"
 	"os"
 	"runtime/debug"
+
+	"github.com/anibaldeboni/screech/config"
+	"github.com/anibaldeboni/screech/input"
+	"github.com/anibaldeboni/screech/screens"
+	"github.com/anibaldeboni/screech/uilib"
 
 	"github.com/veandco/go-sdl2/sdl"
 )

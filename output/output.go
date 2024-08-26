@@ -2,7 +2,8 @@ package output
 
 import (
 	"fmt"
-	"hello/config"
+
+	"github.com/anibaldeboni/screech/config"
 )
 
 func Printf(format string, a ...any) (n int, err error) {

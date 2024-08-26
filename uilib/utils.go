@@ -2,9 +2,10 @@ package uilib
 
 import (
 	"fmt"
-	"hello/config"
-	"hello/output"
 	"strings"
+
+	"github.com/anibaldeboni/screech/config"
+	"github.com/anibaldeboni/screech/output"
 
 	"github.com/veandco/go-sdl2/img"
 	"github.com/veandco/go-sdl2/sdl"

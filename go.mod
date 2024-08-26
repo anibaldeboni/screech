@@ -1,4 +1,4 @@
-module hello
+module github.com/anibaldeboni/screech
 
 go 1.22.6
 

@@ -1,9 +1,10 @@
 package components
 
 import (
-	"hello/output"
-	"hello/uilib"
 	"strings"
+
+	"github.com/anibaldeboni/screech/output"
+	"github.com/anibaldeboni/screech/uilib"
 
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"

@@ -1,10 +1,10 @@
 package screens
 
 import (
-	"hello/components"
-	"hello/config"
-	"hello/input"
-	"hello/uilib"
+	"github.com/anibaldeboni/screech/components"
+	"github.com/anibaldeboni/screech/config"
+	"github.com/anibaldeboni/screech/input"
+	"github.com/anibaldeboni/screech/uilib"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
