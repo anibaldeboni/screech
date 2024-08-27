@@ -48,6 +48,11 @@ func listenForControllerEvents() {
 		sdl.CONTROLLER_BUTTON_DPAD_UP:   "UP",
 		sdl.CONTROLLER_BUTTON_A:         "B",
 		sdl.CONTROLLER_BUTTON_B:         "A",
+		sdl.CONTROLLER_BUTTON_X:         "X",
+		sdl.CONTROLLER_BUTTON_Y:         "Y",
+		sdl.CONTROLLER_BUTTON_START:     "START",
+		sdl.CONTROLLER_BUTTON_BACK:      "SELECT",
+		sdl.CONTROLLER_BUTTON_GUIDE:     "MENU",
 	}
 
 	// State tracking for debounce
