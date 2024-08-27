@@ -1,6 +1,10 @@
 package input
 
-import "github.com/veandco/go-sdl2/sdl"
+import (
+	"runtime"
+
+	"github.com/veandco/go-sdl2/sdl"
+)
 
 type InputEvent struct {
 	KeyCode string
@@ -10,7 +14,9 @@ var InputChannel = make(chan InputEvent)
 
 func StartListening() {
 	go listenForKeyboardEvents()
-	go listenForControllerEvents()
+	if runtime.GOOS == "linux" {
+		go listenForControllerEvents()
+	}
 }
 
 func listenForKeyboardEvents() {
