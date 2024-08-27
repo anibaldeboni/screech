@@ -8,25 +8,30 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+type Item struct {
+	Text  string
+	Value string
+}
+
 type ListComponent struct {
 	renderer        *sdl.Renderer
-	items           []string
+	items           []Item
 	selectedIndex   int
 	scrollOffset    int
-	itemFormatter   func(index int, item string) string
+	itemFormatter   func(index int, item Item) string
 	maxVisibleItems int
 }
 
-func NewListComponent(renderer *sdl.Renderer, maxVisibleItems int, itemFormatter func(index int, item string) string) *ListComponent {
+func NewListComponent(renderer *sdl.Renderer, maxVisibleItems int, itemFormatter func(index int, item Item) string) *ListComponent {
 	return &ListComponent{
 		renderer:        renderer,
 		itemFormatter:   itemFormatter,
 		maxVisibleItems: maxVisibleItems,
-		items:           []string{},
+		items:           []Item{},
 	}
 }
 
-func (l *ListComponent) SetItems(items []string) {
+func (l *ListComponent) SetItems(items []Item) {
 	l.items = items
 	l.selectedIndex = 0
 	l.scrollOffset = 0
@@ -91,6 +96,6 @@ func (l *ListComponent) GetScrollOffset() int {
 	return l.scrollOffset
 }
 
-func (l *ListComponent) GetItems() []string {
+func (l *ListComponent) GetItems() []Item {
 	return l.items
 }

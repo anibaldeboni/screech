@@ -20,8 +20,8 @@ type MainScreen struct {
 }
 
 func NewMainScreen(renderer *sdl.Renderer) (*MainScreen, error) {
-	listComponent := components.NewListComponent(renderer, 19, func(index int, item string) string {
-		return fmt.Sprintf("%d. %s", index+1, item)
+	listComponent := components.NewListComponent(renderer, 19, func(index int, item components.Item) string {
+		return fmt.Sprintf("%d. %s", index+1, item.Text)
 	})
 	return &MainScreen{
 		renderer:      renderer,
@@ -34,8 +34,19 @@ func (m *MainScreen) InitMain() {
 		return
 	}
 
-	m.listComponent.SetItems(listEmulatorDirs())
+	m.listComponent.SetItems(romDirsToList(listEmulatorDirs()))
 	m.initialized = true
+}
+
+func romDirsToList(romDirs []RomDir) []components.Item {
+	var items []components.Item
+	for _, romDir := range romDirs {
+		items = append(items, components.Item{
+			Text:  romDir.Name,
+			Value: romDir.Path,
+		})
+	}
+	return items
 }
 
 func (m *MainScreen) HandleInput(event input.InputEvent) {
@@ -51,7 +62,7 @@ func (m *MainScreen) HandleInput(event input.InputEvent) {
 			return
 		}
 		selectedSystem := m.listComponent.GetItems()[m.listComponent.GetSelectedIndex()]
-		config.CurrentSystem = selectedSystem
+		config.CurrentSystem = selectedSystem.Text
 		config.CurrentScreen = "scraping_screen"
 		m.initialized = false
 	}
@@ -75,23 +86,31 @@ func (m *MainScreen) Draw() {
 	m.renderer.Present()
 }
 
-func listEmulatorDirs() []string {
-	emulatorsDir := config.EmulatorsDir
-	files, err := os.ReadDir(emulatorsDir)
+type RomDir struct {
+	Name string
+	Path string
+}
+
+func listEmulatorDirs() []RomDir {
+	emulatorsDir := config.Roms
+	dirEntries, err := os.ReadDir(emulatorsDir)
 	if err != nil {
 		panic(err)
 	}
 
-	var dirs []string
-	for _, file := range files {
-		if file.IsDir() {
-			dirPath := filepath.Join(emulatorsDir, file.Name())
+	var dirs []RomDir
+	for _, entry := range dirEntries {
+		if entry.IsDir() {
+			dirPath := filepath.Join(emulatorsDir, entry.Name())
 			dirFiles, err := os.ReadDir(dirPath)
 			if err != nil {
 				panic(err)
 			}
 			if len(dirFiles) > 0 {
-				dirs = append(dirs, file.Name())
+				dirs = append(dirs, RomDir{
+					Name: entry.Name(),
+					Path: dirPath,
+				})
 			}
 		}
 	}

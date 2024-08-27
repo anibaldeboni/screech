@@ -17,30 +17,6 @@ import (
 //go:embed assets/NotoSans_Condensed-SemiBold.ttf
 var NotoSans []byte
 
-const (
-	fontPath        = "./test.ttf"
-	fontSize        = 36
-	WinWidth  int32 = 1280
-	WinHeight int32 = 720
-	CenterX   int32 = WinWidth / 2
-	CenterY   int32 = WinHeight / 2
-)
-
-type Text struct {
-	Content string
-	X, Y    int32
-}
-
-func clamp(value, min, max int32) int32 {
-	if value < min {
-		return min
-	}
-	if value > max {
-		return max
-	}
-	return value
-}
-
 func main() {
 	defer func() {
 		if r := recover(); r != nil {
@@ -77,7 +53,7 @@ func main() {
 		panic(err)
 	}
 
-	window, err := sdl.CreateWindow("Systems List", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, config.ScreenWidth, config.ScreenHeight, sdl.WINDOW_SHOWN)
+	window, err := sdl.CreateWindow("ScreechApp", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, config.ScreenWidth, config.ScreenHeight, sdl.WINDOW_SHOWN)
 	if err != nil {
 		panic(err)
 	}
