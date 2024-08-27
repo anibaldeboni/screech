@@ -124,24 +124,8 @@ type Response struct {
 					Text   string `json:"text"`
 				} `json:"noms"`
 			} `json:"themes"`
-			Medias []struct {
-				Type      string `json:"type"`
-				Parent    string `json:"parent"`
-				URL       string `json:"url"`
-				Region    string `json:"region,omitempty"`
-				Crc       string `json:"crc"`
-				Md5       string `json:"md5"`
-				Sha1      string `json:"sha1"`
-				Size      string `json:"size,omitempty"`
-				Format    string `json:"format"`
-				Posx      string `json:"posx,omitempty"`
-				Posy      string `json:"posy,omitempty"`
-				Posw      string `json:"posw,omitempty"`
-				Posh      string `json:"posh,omitempty"`
-				ID        string `json:"id,omitempty"`
-				Subparent string `json:"subparent,omitempty"`
-			} `json:"medias"`
-			Roms []struct {
+			Medias []Media `json:"medias"`
+			Roms   []struct {
 				ID              string `json:"id"`
 				Romsize         string `json:"romsize"`
 				Romfilename     string `json:"romfilename"`
@@ -204,4 +188,22 @@ type Response struct {
 			} `json:"rom"`
 		} `json:"jeu"`
 	} `json:"response"`
+}
+
+type Media struct {
+	Type      string `json:"type"`
+	Parent    string `json:"parent"`
+	URL       string `json:"url"`
+	Region    string `json:"region,omitempty"`
+	Crc       string `json:"crc"`
+	Md5       string `json:"md5"`
+	Sha1      string `json:"sha1"`
+	Size      string `json:"size,omitempty"`
+	Format    string `json:"format"`
+	Posx      string `json:"posx,omitempty"`
+	Posy      string `json:"posy,omitempty"`
+	Posw      string `json:"posw,omitempty"`
+	Posh      string `json:"posh,omitempty"`
+	ID        string `json:"id,omitempty"`
+	Subparent string `json:"subparent,omitempty"`
 }
