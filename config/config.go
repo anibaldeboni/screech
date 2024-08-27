@@ -31,12 +31,14 @@ var (
 	LongTextFont    *ttf.Font
 	Colors          FontColors
 	ControlType     string
-	EmulatorsDir    string
+	Roms            string
 	UiControls      = "assets/ui_controls_1280_720.bmp"
 	UiBackground    = "assets/bg.bmp"
 	UiOverlay       = "assets/bg_overlay.bmp"
 	Username        string
 	Password        string
+	SystemsIDs      map[string]string
+	GameRegions     []string
 )
 
 func InitVars() {
@@ -52,11 +54,13 @@ func InitVars() {
 	CurrentSystem = ""
 	CurrentGame = ""
 	ControlType = "keyboard"
-	ScreenWidth = config.ScreenWidth
-	ScreenHeight = config.ScreenHeight
-	EmulatorsDir = config.EmulatorsDir
+	ScreenWidth = config.Screen.Width
+	ScreenHeight = config.Screen.Height
+	Roms = config.Roms
 	Username = config.Screenscraper.Username
 	Password = config.Screenscraper.Password
+	SystemsIDs = config.Screenscraper.SystemsIDs
+	GameRegions = config.Screenscraper.Media.Regions
 	BodyFont = nil
 	HeaderFont = nil
 	BodyBigFont = nil
@@ -70,18 +74,29 @@ func InitVars() {
 }
 
 func ScrapedImgDir() string {
-	return filepath.Join(EmulatorsDir, CurrentSystem, "Imgs")
+	return filepath.Join(Roms, CurrentSystem, "Imgs")
+}
+
+type scraperConfig struct {
+	Username string `yaml:"username"`
+	Password string `yaml:"password"`
+	Media    struct {
+		Type    string   `yaml:"type"`
+		Width   int32    `yaml:"width"`
+		Height  int32    `yaml:"height"`
+		Regions []string `yaml:"regions"`
+	} `yaml:"media"`
+	SystemsIDs map[string]string `yaml:"systems-ids"`
 }
 
 type userConfigs struct {
-	ScreenWidth   int32  `yaml:"screen_width"`
-	ScreenHeight  int32  `yaml:"screen_height"`
-	EmulatorsDir  string `yaml:"emulators_dir"`
-	Screenscraper struct {
-		Username string `yaml:"username"`
-		Password string `yaml:"password"`
-	} `yaml:"screenscraper"`
-	Debug bool `yaml:"debug,omitempty"`
+	Screen struct {
+		Width  int32 `yaml:"width"`
+		Height int32 `yaml:"height"`
+	} `yaml:"screen"`
+	Roms          string        `yaml:"roms"`
+	Screenscraper scraperConfig `yaml:"screenscraper"`
+	Debug         bool          `yaml:"debug,omitempty"`
 }
 
 func readConfigFile() (*userConfigs, error) {
