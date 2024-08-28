@@ -37,7 +37,7 @@ func main() {
 		panic(err)
 	}
 
-	if err := uilib.InitFont(NotoSans, &config.BodyFont, 24); err != nil {
+	if err := uilib.InitFont(NotoSans, &config.BodyFont, 32); err != nil {
 		panic(err)
 	}
 
@@ -45,11 +45,11 @@ func main() {
 		panic(err)
 	}
 
-	if err := uilib.InitFont(NotoSans, &config.LongTextFont, 24); err != nil {
+	if err := uilib.InitFont(NotoSans, &config.LongTextFont, 28); err != nil {
 		panic(err)
 	}
 
-	if err := uilib.InitFont(NotoSans, &config.HeaderFont, 28); err != nil {
+	if err := uilib.InitFont(NotoSans, &config.HeaderFont, 38); err != nil {
 		panic(err)
 	}
 
