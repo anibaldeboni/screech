@@ -14,58 +14,314 @@ screenscraper:
       - us
       - ame
       - wor
-  systems-ids: # the key should match the system name in roms folder
-    MSX2: "116" # MSX
-    N64: "14" # Nintendo 64
-    N64DD: "122" # Nintendo 64DD
-    NAOMI: "56" # Sega Naomi
-    NDS: "15" # NDS
-    NEOCD: "70" # Neo Geo CD
-    NEOGEO: "142" # Neo Geo AES
-    NGP: "25" # Neo Geo Pocket
-    NGC: "82" # Neo-geo Pocket Color
-    ODYSSEY: "104" # Videopac / Magnavox Odyssey 2
-    OPENBOR: "214" # OpenBOR
-    PALMOS: "219" # Palm
-    PANASONIC: "29" # 3DO
-    PCE: "31" # NEC TurboGrafx-16 / PC Engine
-    PCECD: "114" # NEC TurboGrafx-CD
-    PC88: "221" # NEC PC-8000 & PC-8800 series / NEC PC-8801
-    PCFX: "72" # NEC PC-FX
-    PC98: "208" # NEC PC-98 / NEC PC-9801
-    PICO: "234" # PICO
-    POKEMINI: "211" # PokeMini
-    PORTS: "137" # PC Win9X
-    PS: "57" # Sony Playstation
-    PSP: "61" # Sony PSP
-    PSPMINIS: "172" # Sony PSP Minis
-    SATURN: "22" # Sony PSP Minis
-    SATELLAVIEW: "107" # Satellaview
-    SCUMMVM: "123" # ScummVM
-    SEGACD: "20" # Sega CD
-    SG1000: "109" # Sega SG-1000
-    ATARI7800: "41" # Atari 7800
-    SFC: "4" # Super Nintendo (SNES)
-    SFCMSU: "4" # Super Nintendo (SNES) hacks
-    SGB: "127" # Super Game Boy
-    SFX: "105" # NEC PC Engine SuperGrafx
-    SUFAMI: "108" # Sufami Turbo
-    WS: "207" # Watara Supervision
-    WSC: "207" # Watara Supervision
-    SEGA32X: "19" # Sega 32X
-    THOMSON: "141" # Thomson
-    TIC: "222" # TIC-80
-    UZEBOX: "216" # Uzebox
-    VB: "11" # Virtual Boy
-    VECTREX: "102" # Vectrex
-    VIC20: "73" # Commodore VIC-20
-    VIDEOPAC: "104" # Videopac
-    VMU: "23" # Dreamcast VMU (useless)
-    X68000: "79" # Sharp X68000
-    X1: "220" # Sharp X1
-    ZXEIGHTYONE: "77" # Sinclair ZX-81
-    ZXS: "76" # Sinclair ZX Spectrum
+  systems:
+    - dir: ADVMAME
+      id: "75"
+      name: Mame
+    - dir: AMIGA
+      id: "64"
+      name: Commodore Amiga
+    - dir: AMIGACD
+      id: "134"
+      name: Commodore Amiga CD
+    - dir: AMIGACDTV
+      id: "129"
+      name: Commodore Amiga CD
+    - dir: ARCADE
+      id: "75"
+      name: Mame
+    - dir: ARDUBOY
+      id: "263"
+      name: Arduboy
+    - dir: ATARI2600
+      id: "26"
+      name: Atari 2600
+    - dir: ATARIST
+      id: "42"
+      name: Atari ST
+    - dir: ATOMISWAVE
+      id: "53"
+      name: Atari ST
+    - dir: COLECO
+      id: "183"
+      name: Coleco
+    - dir: COLSGM
+      id: "183"
+      name: Coleco
+    - dir: C64
+      id: "66"
+      name: Commodore 64
+    - dir: CPC
+      id: "65"
+      name: Amstrad CPC
+    - dir: CPET
+      id: "240"
+      name: Commodore PET
+    - dir: CPLUS4
+      id: "99"
+      name: Commodore Plus 4
+    - dir: CPS1
+      id: "6"
+      name: Capcom Play System
+    - dir: CPS2
+      id: "7"
+      name: Capcom Play System 2
+    - dir: CPS3
+      id: "8"
+      name: Capcom Play System 3
+    - dir: DAPHNE
+      id: "49"
+      name: Daphne
+    - dir: DC
+      id: "23"
+      name: dreamcast
+    - dir: DOS
+      id: "135"
+      name: DOS
+    - dir: EASYRPG
+      id: "231"
+      name: EasyRPG
+    - dir: EBK
+      id: "93"
+      name: EBK
+    - dir: ATARI800
+      id: "43"
+      name: Atari 800
+    - dir: CHANNELF
+      id: "80"
+      name: Fairchild Channel F
+    - dir: FBA2012
+      id: "75"
+      name: FBA2012
+    - dir: FBALPHA
+      id: "75"
+      name: FBAlpha
+    - dir: FBNEO
+      id: ""
+      name: FBNeo (Empty)
+    - dir: FC
+      id: "3"
+      name: NES (Famicom)
+    - dir: FDS
+      id: "106"
+      name: Famicom Disk System
+    - dir: ATARI5200
+      id: "40"
+      name: Atari 5200
+    - dir: GB
+      id: "9"
+      name: Game Boy
+    - dir: GBA
+      id: "12"
+      name: Game Boy Advance
+    - dir: GBC
+      id: "10"
+      name: Game Boy Color
+    - dir: GG
+      id: "21"
+      name: Sega Game Gear
+    - dir: GW
+      id: "52"
+      name: Nintendo Game & Watch
+    - dir: INTELLIVISION
+      id: "115"
+      name: Intellivision
+    - dir: JAGUAR
+      id: "27"
+      name: Atari Jaguar
+    - dir: LOWRESNX
+      id: "244"
+      name: LowRes NX
+    - dir: LUTRO
+      id: "206"
+      name: Lutro
+    - dir: LYNX
+      id: "28"
+      name: Atari Lynx
+    - dir: MAME
+      id: "75"
+      name: Mame 2000
+    - dir: MAME2003PLUS
+      id: "75"
+      name: Mame 2003
+    - dir: MAME2010
+      id: "75"
+      name: Mame 2003
+    - dir: MBA
+      id: "75"
+      name: MBA
+    - dir: MD
+      id: "1"
+      name: Sega Genesis (Mega Drive)
+    - dir: MDMSU
+      id: "1"
+      name: Sega Genesis (Mega Drive) Hacks
+    - dir: MEGADUCK
+      id: "90"
+      name: Megaduck
+    - dir: MS
+      id: "2"
+      name: Sega Master System
+    - dir: MSX
+      id: "113"
+      name: MSX
+    - dir: MSX2
+      id: "116"
+      name: MSX
+    - dir: N64
+      id: "14"
+      name: Nintendo 64
+    - dir: N64DD
+      id: "122"
+      name: Nintendo 64DD
+    - dir: NAOMI
+      id: "56"
+      name: Sega Naomi
+    - dir: NDS
+      id: "15"
+      name: NDS
+    - dir: NEOCD
+      id: "70"
+      name: Neo Geo CD
+    - dir: NEOGEO
+      id: "142"
+      name: Neo Geo AES
+    - dir: NGP
+      id: "25"
+      name: Neo Geo Pocket
+    - dir: NGC
+      id: "82"
+      name: Neo-geo Pocket Color
+    - dir: ODYSSEY
+      id: "104"
+      name: Videopac / Magnavox Odyssey 2
+    - dir: OPENBOR
+      id: "214"
+      name: OpenBOR
+    - dir: PALMOS
+      id: "219"
+      name: Palm
+    - dir: PANASONIC
+      id: "29"
+      name: 3DO
+    - dir: PCE
+      id: "31"
+      name: NEC TurboGrafx-16 / PC Engine
+    - dir: PCECD
+      id: "114"
+      name: NEC TurboGrafx-CD
+    - dir: PC88
+      id: "221"
+      name: NEC PC-8000 & PC-8800 series / NEC PC-8801
+    - dir: PCFX
+      id: "72"
+      name: NEC PC-FX
+    - dir: PC98
+      id: "208"
+      name: NEC PC-98 / NEC PC-9801
+    - dir: PICO
+      id: "234"
+      name: PICO
+    - dir: POKEMINI
+      id: "211"
+      name: PokeMini
+    - dir: PORTS
+      id: "137"
+      name: PC Win9X
+    - dir: PS
+      id: "57"
+      name: Sony Playstation
+    - dir: PSP
+      id: "61"
+      name: Sony PSP
+    - dir: PSPMINIS
+      id: "172"
+      name: Sony PSP Minis
+    - dir: SATURN
+      id: "22"
+      name: Sony PSP Minis
+    - dir: SATELLAVIEW
+      id: "107"
+      name: Satellaview
+    - dir: SCUMMVM
+      id: "123"
+      name: ScummVM
+    - dir: SEGACD
+      id: "20"
+      name: Sega CD
+    - dir: SG1000
+      id: "109"
+      name: Sega SG-1000
+    - dir: ATARI7800
+      id: "41"
+      name: Atari 7800
+    - dir: SFC
+      id: "4"
+      name: Super Nintendo (SNES)
+    - dir: SFCMSU
+      id: "4"
+      name: Super Nintendo (SNES) hacks
+    - dir: SGB
+      id: "127"
+      name: Super Game Boy
+    - dir: SFX
+      id: "105"
+      name: NEC PC Engine SuperGrafx
+    - dir: SUFAMI
+      id: "108"
+      name: Sufami Turbo
+    - dir: WS
+      id: "207"
+      name: Watara Supervision
+    - dir: WSC
+      id: "207"
+      name: Watara Supervision
+    - dir: SEGA32X
+      id: "19"
+      name: Sega 32X
+    - dir: SFX
+      id: "19"
+      name: Sega 32X
+    - dir: THOMSON
+      id: "141"
+      name: Thomson
+    - dir: TIC
+      id: "222"
+      name: TIC-80
+    - dir: UZEBOX
+      id: "216"
+      name: Uzebox
+    - dir: VB
+      id: "11"
+      name: Virtual Boy
+    - dir: VECTREX
+      id: "102"
+      name: Vectrex
+    - dir: VIC20
+      id: "73"
+      name: Commodore VIC-20
+    - dir: VIDEOPAC
+      id: "104"
+      name: Videopac
+    - dir: VMU
+      id: "23"
+      name: Dreamcast VMU (useless)
+    - dir: WS
+      id: "45"
+      name: Bandai WonderSwan & Color
+    - dir: X68000
+      id: "79"
+      name: Sharp X68000
+    - dir: X1
+      id: "220"
+      name: Sharp X1
+    - dir: ZXEIGHTYONE
+      id: "77"
+      name: Sinclair ZX-81
+    - dir: ZXS
+      id: "76"
+      name: Sinclair ZX Spectrum
 thumbnail:
   width: 400
   height: 580
-  dir: SDCARD/Imgs/$SYSTEM$/
+  dir: SDCARD/Imgs/%SYSTEM%/

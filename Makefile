@@ -8,9 +8,10 @@ LDLAGS := $(shell pkg-config --libs SDL2_image SDL2_ttf) -ldl -lpthread -lm
 
 package: build
 	rm -rf Screech && \
-	mkdir -p Screech/assets && \
+	mkdir -p Screech/assets/logos && \
 	cp -r ./assets/*.bmp Screech/assets/ && \
 	cp -r ./includes/* Screech/ && \
+	cp -r ./assets/logos/* Screech/assets/logos/ && \
 	cp ./bin/app Screech/
 
 build:

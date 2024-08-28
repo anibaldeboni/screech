@@ -3,6 +3,7 @@ package config
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/veandco/go-sdl2/sdl"
 	"github.com/veandco/go-sdl2/ttf"
@@ -17,14 +18,14 @@ type FontColors struct {
 }
 
 var (
+	configFile      = "screech.yaml"
 	Debug           bool
-	ScreenWidth     int32
-	ScreenHeight    int32
+	ScreenWidth     = int32(1280)
+	ScreenHeight    = int32(720)
 	CurrentPlatform string
 	CurrentScreen   string
 	CurrentSystem   string
 	CurrentGame     string
-	CurrentTester   string
 	BodyFont        *ttf.Font
 	HeaderFont      *ttf.Font
 	BodyBigFont     *ttf.Font
@@ -38,17 +39,23 @@ var (
 	Username        string
 	Password        string
 	SystemsIDs      map[string]string
+	SystemsNames    map[string]string
 	GameRegions     []string
+	Media           ScrapeMedia
+	Thumbnail       = thumbConfig{
+		Width:  400,
+		Height: 580,
+		Dir:    "thumbnails",
+	}
 )
 
 func InitVars() {
 	config, err := readConfigFile()
 	if err != nil {
-		panic(err)
+		SaveCurrent()
+		return
 	}
 	Debug = config.Debug
-	ScreenWidth = 0
-	ScreenHeight = 0
 	CurrentPlatform = "tsp"
 	CurrentScreen = "main_screen"
 	CurrentSystem = ""
@@ -59,8 +66,11 @@ func InitVars() {
 	Roms = config.Roms
 	Username = config.Screenscraper.Username
 	Password = config.Screenscraper.Password
-	SystemsIDs = config.Screenscraper.SystemsIDs
+	SystemsIDs = defineSystemsIDs(config.Screenscraper.Systems)
+	SystemsNames = defineSystemsNames(config.Screenscraper.Systems)
 	GameRegions = config.Screenscraper.Media.Regions
+	Media = config.Screenscraper.Media
+	Thumbnail = config.Thumbnail
 	BodyFont = nil
 	HeaderFont = nil
 	BodyBigFont = nil
@@ -73,39 +83,95 @@ func InitVars() {
 	}
 }
 
+func defineSystemsIDs(systems []scraperSystem) map[string]string {
+	systemsIDs := make(map[string]string)
+	for _, system := range systems {
+		systemsIDs[system.Dir] = system.ID
+	}
+	return systemsIDs
+}
+func defineSystemsNames(systems []scraperSystem) map[string]string {
+	systemsIDs := make(map[string]string)
+	for _, system := range systems {
+		systemsIDs[system.Dir] = system.Name
+	}
+	return systemsIDs
+}
 func ScrapedImgDir() string {
-	return filepath.Join(Roms, CurrentSystem, "Imgs")
+	dir := strings.ReplaceAll(Thumbnail.Dir, "/", string(filepath.Separator))
+	dir = strings.ReplaceAll(dir, "\\", string(filepath.Separator))
+	dir = strings.ReplaceAll(dir, "%SYSTEM%", CurrentSystem)
+	return dir
 }
 
 type scraperConfig struct {
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	Media    struct {
-		Type    string   `yaml:"type"`
-		Width   int32    `yaml:"width"`
-		Height  int32    `yaml:"height"`
-		Regions []string `yaml:"regions"`
-	} `yaml:"media"`
-	SystemsIDs map[string]string `yaml:"systems-ids"`
+	Username string          `yaml:"username"`
+	Password string          `yaml:"password"`
+	Media    ScrapeMedia     `yaml:"media"`
+	Systems  []scraperSystem `yaml:"systems"`
 }
 
+type scraperSystem struct {
+	ID   string `yaml:"id"`
+	Name string `yaml:"name"`
+	Dir  string `yaml:"dir"`
+}
+
+type ScrapeMedia struct {
+	Type    string   `yaml:"type"`
+	Width   int32    `yaml:"width"`
+	Height  int32    `yaml:"height"`
+	Regions []string `yaml:"regions"`
+}
+type screenConfig struct {
+	Width  int32 `yaml:"width"`
+	Height int32 `yaml:"height"`
+}
+
+type thumbConfig struct {
+	Width  int32  `yaml:"width"`
+	Height int32  `yaml:"height"`
+	Dir    string `yaml:"dir"`
+}
 type userConfigs struct {
-	Screen struct {
-		Width  int32 `yaml:"width"`
-		Height int32 `yaml:"height"`
-	} `yaml:"screen"`
+	Screen        screenConfig  `yaml:"screen"`
 	Roms          string        `yaml:"roms"`
 	Screenscraper scraperConfig `yaml:"screenscraper"`
+	Thumbnail     thumbConfig   `yaml:"thumbnail"`
 	Debug         bool          `yaml:"debug,omitempty"`
 }
 
 func readConfigFile() (*userConfigs, error) {
-	configFile := "./screech.yaml"
+	var config *userConfigs
 	file, err := os.ReadFile(configFile)
 	if err != nil {
-		return &userConfigs{}, err
+		return nil, err
 	}
-	var config *userConfigs
 	err = yaml.Unmarshal(file, &config)
 	return config, err
+}
+
+func SaveCurrent() {
+	config := userConfigs{
+		Screen: screenConfig{
+			Width:  ScreenWidth,
+			Height: ScreenHeight,
+		},
+		Roms: Roms,
+		Screenscraper: scraperConfig{
+			Username: Username,
+			Password: Password,
+			Media:    Media,
+		},
+		Thumbnail: Thumbnail,
+		Debug:     Debug,
+	}
+
+	data, err := yaml.Marshal(&config)
+	if err != nil {
+		panic(err)
+	}
+	if err := os.WriteFile(configFile, data, 0644); err != nil {
+		panic(err)
+	}
 }
