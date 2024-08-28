@@ -33,8 +33,9 @@ func (m *MainScreen) InitMain() {
 	if m.initialized {
 		return
 	}
-
-	m.listComponent.SetItems(romDirsToList(listEmulatorDirs()))
+	systems := romDirsToList(listEmulatorDirs())
+	m.listComponent.SetItems(systems)
+	config.CurrentPlatform = systems[0].ID
 	m.initialized = true
 }
 
@@ -43,6 +44,7 @@ func romDirsToList(romDirs []RomDir) []components.Item {
 	for _, romDir := range romDirs {
 		items = append(items, components.Item{
 			Text:  romDir.Name,
+			ID:    romDir.Name,
 			Value: romDir.Path,
 		})
 	}
@@ -61,11 +63,20 @@ func (m *MainScreen) HandleInput(event input.InputEvent) {
 		if len(m.listComponent.GetItems()) == 0 {
 			return
 		}
-		selectedSystem := m.listComponent.GetItems()[m.listComponent.GetSelectedIndex()]
-		config.CurrentSystem = selectedSystem.Text
 		config.CurrentScreen = "scraping_screen"
 		m.initialized = false
 	}
+	m.updateLogo()
+}
+
+func (m *MainScreen) updateLogo() {
+	selectedSystem := m.SelectedSystem()
+	config.CurrentSystem = selectedSystem.ID
+	uilib.RenderImage(m.renderer, "assets/logos/"+selectedSystem.ID+".png")
+}
+
+func (m *MainScreen) SelectedSystem() components.Item {
+	return m.listComponent.GetItems()[m.listComponent.GetSelectedIndex()]
 }
 
 func (m *MainScreen) Draw() {
@@ -82,6 +93,7 @@ func (m *MainScreen) Draw() {
 	m.listComponent.Draw(config.Colors.WHITE, config.Colors.SECONDARY)
 
 	uilib.RenderTexture(m.renderer, config.UiControls, "Q3", "Q4")
+	m.updateLogo()
 
 	m.renderer.Present()
 }
@@ -92,19 +104,19 @@ type RomDir struct {
 }
 
 func listEmulatorDirs() []RomDir {
-	emulatorsDir := config.Roms
-	dirEntries, err := os.ReadDir(emulatorsDir)
+	romsDir := config.Roms
+	dirEntries, err := os.ReadDir(romsDir)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("error reading dir %s: %w", romsDir, err))
 	}
 
 	var dirs []RomDir
 	for _, entry := range dirEntries {
 		if entry.IsDir() {
-			dirPath := filepath.Join(emulatorsDir, entry.Name())
+			dirPath := filepath.Join(romsDir, entry.Name())
 			dirFiles, err := os.ReadDir(dirPath)
 			if err != nil {
-				panic(err)
+				panic(fmt.Errorf("error reading dir %s: %w", dirPath, err))
 			}
 			if len(dirFiles) > 0 {
 				dirs = append(dirs, RomDir{

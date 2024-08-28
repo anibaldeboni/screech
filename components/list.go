@@ -10,6 +10,7 @@ import (
 
 type Item struct {
 	Text  string
+	ID    string
 	Value string
 }
 
