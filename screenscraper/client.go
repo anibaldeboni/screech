@@ -1,6 +1,7 @@
 package screenscraper
 
 import (
+	"context"
 	"crypto/sha1"
 	"encoding/json"
 	"errors"
@@ -36,12 +37,12 @@ var (
 
 const MAX_FILE_SIZE_BYTES = 104857600 // 100MB
 
-func FindGame(systemID string, romPath string) (Response, error) {
-	var res Response
+func FindGame(ctx context.Context, systemID string, romPath string) (Response, error) {
+	var result Response
 
 	u, err := url.Parse(BaseURL)
 	if err != nil {
-		return res, err
+		return result, err
 	}
 
 	q := u.Query()
@@ -59,35 +60,39 @@ func FindGame(systemID string, romPath string) (Response, error) {
 
 	u.RawQuery = q.Encode()
 
-	resp, err := http.Get(u.String())
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
-		return res, HTTPRequestErr
+		return result, HTTPRequestErr
 	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
+	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return res, UnreadableBodyErr
+		return result, HTTPRequestErr
+	}
+	defer res.Body.Close()
+
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return result, UnreadableBodyErr
 	}
 
 	s := string(body)
 	switch {
 	case strings.Contains(s, "API closed"):
-		return res, APIClosedErr
+		return result, APIClosedErr
 	case strings.Contains(s, "Erreur"):
-		return res, GameNotFoundErr
+		return result, GameNotFoundErr
 	case s == "":
-		return res, EmptyBodyErr
+		return result, EmptyBodyErr
 	}
 
-	if err := json.Unmarshal(body, &res); err != nil {
-		return res, err
+	if err := json.Unmarshal(body, &result); err != nil {
+		return result, err
 	}
 
-	return res, nil
+	return result, nil
 }
 
-func DownloadMedia(medias []Media, mediaType MediaType, dest string) error {
+func DownloadMedia(ctx context.Context, medias []Media, mediaType MediaType, dest string) error {
 	var mediaURL string
 
 	if _, err := os.Stat(dest); err == nil {
@@ -124,11 +129,15 @@ findmedia:
 		return fmt.Errorf("failed to create destination directory: %w", err)
 	}
 
-	resp, err := http.Get(u.String())
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to create HTTP request: %w", err)
 	}
-	defer resp.Body.Close()
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to download media: %w", err)
+	}
+	defer res.Body.Close()
 
 	file, err := os.Create(dest)
 	if err != nil {
@@ -136,7 +145,7 @@ findmedia:
 	}
 	defer file.Close()
 
-	if _, err := io.Copy(file, resp.Body); err != nil {
+	if _, err := io.Copy(file, res.Body); err != nil {
 		return err
 	}
 

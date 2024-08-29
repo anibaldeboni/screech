@@ -1,6 +1,7 @@
 package screens
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -21,6 +22,8 @@ type ScrapingScreen struct {
 	renderer    *sdl.Renderer
 	textView    *components.TextView
 	initialized bool
+	ctx         context.Context
+	cancel      context.CancelFunc
 }
 
 func NewScrapingScreen(renderer *sdl.Renderer) (*ScrapingScreen, error) {
@@ -48,6 +51,10 @@ func (m *ScrapingScreen) HandleInput(event input.InputEvent) {
 	case "UP":
 		m.textView.ScrollUp(1)
 	case "B":
+		if m.cancel != nil {
+			m.textView.AddText("Scraping aborted")
+			m.cancel()
+		}
 		config.CurrentScreen = "main_screen"
 		m.initialized = false
 	}
@@ -101,7 +108,7 @@ func isInvalidRom(rom string) bool {
 	return !isValidRom(rom)
 }
 
-func download(ch chan string) {
+func download(ctx context.Context, ch chan string) {
 	var success int
 	var failed int
 	var skipped int
@@ -134,11 +141,11 @@ func download(ch chan string) {
 		}
 
 		ch <- fmt.Sprintf("Scraping %s", rom)
-		if res, err := screenscraper.FindGame(config.SystemsIDs[config.CurrentSystem], rom); err != nil {
+		if res, err := screenscraper.FindGame(ctx, config.SystemsIDs[config.CurrentSystem], rom); err != nil {
 			ch <- fmt.Sprintf("Error scraping %s: %v", rom, err)
 			failed++
 		} else {
-			if err := screenscraper.DownloadMedia(res.Response.Jeu.Medias, screenscraper.MediaType(config.Media.Type), scrapeFile); err != nil {
+			if err := screenscraper.DownloadMedia(ctx, res.Response.Jeu.Medias, screenscraper.MediaType(config.Media.Type), scrapeFile); err != nil {
 				ch <- fmt.Sprintf("Error: %v", err)
 				failed++
 			} else {
@@ -158,8 +165,9 @@ func (s *ScrapingScreen) scrape() {
 		scraping = true
 	}
 	ch := make(chan string)
+	s.ctx, s.cancel = context.WithCancel(context.Background())
 
-	go download(ch)
+	go download(s.ctx, ch)
 	go func(ch chan string) {
 		for msg := range ch {
 			s.textView.AddText(msg)
