@@ -22,7 +22,7 @@ build:
 	go build \
 	-tags static \
 	-buildvcs=false \
-	-ldflags "-X ${DEV_ID} -X ${DEV_PASSWORD}" \
+	-ldflags "-s -w -X ${DEV_ID} -X ${DEV_PASSWORD}" \
 	-o bin/app ./
 
 clean:

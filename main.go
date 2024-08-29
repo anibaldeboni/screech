@@ -14,8 +14,11 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-//go:embed assets/NotoSans_Condensed-SemiBold.ttf
-var NotoSans []byte
+//go:embed assets/Roboto-Condensed.ttf
+var RobotoCondensed []byte
+
+//go:embed assets/Roboto-BoldCondensed.ttf
+var RobotBoldCondensed []byte
 
 func main() {
 	defer func() {
@@ -37,19 +40,15 @@ func main() {
 		panic(err)
 	}
 
-	if err := uilib.InitFont(NotoSans, &config.BodyFont, 30); err != nil {
+	if err := uilib.InitFont(RobotoCondensed, &config.BodyFont, 30); err != nil {
 		panic(err)
 	}
 
-	if err := uilib.InitFont(NotoSans, &config.ListFont, 34); err != nil {
+	if err := uilib.InitFont(RobotoCondensed, &config.ListFont, 30); err != nil {
 		panic(err)
 	}
 
-	if err := uilib.InitFont(NotoSans, &config.LongTextFont, 28); err != nil {
-		panic(err)
-	}
-
-	if err := uilib.InitFont(NotoSans, &config.HeaderFont, 38); err != nil {
+	if err := uilib.InitFont(RobotBoldCondensed, &config.HeaderFont, 38); err != nil {
 		panic(err)
 	}
 

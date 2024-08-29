@@ -34,7 +34,7 @@ func (m *MainScreen) InitMain() {
 	}
 	systems := romDirsToList(listEmulatorDirs())
 	m.listComponent.SetItems(systems)
-	config.CurrentPlatform = systems[0].ID
+	config.CurrentSystem = systems[0].ID
 	m.initialized = true
 }
 
@@ -90,6 +90,7 @@ func (m *MainScreen) Draw() {
 
 	// Draw the title
 	uilib.DrawText(m.renderer, "Systems", sdl.Point{X: 25, Y: 25}, config.Colors.PRIMARY, config.HeaderFont)
+	uilib.RenderTexture(m.renderer, config.UiOverlaySelection, "Q2", "Q4")
 
 	m.listComponent.Draw(config.Colors.WHITE, config.Colors.SECONDARY)
 
