@@ -14,7 +14,7 @@ type Item struct {
 	Value string
 }
 
-type ListComponent struct {
+type List struct {
 	renderer        *sdl.Renderer
 	items           []Item
 	selectedIndex   int
@@ -23,8 +23,8 @@ type ListComponent struct {
 	maxVisibleItems int
 }
 
-func NewListComponent(renderer *sdl.Renderer, maxVisibleItems int, itemFormatter func(index int, item Item) string) *ListComponent {
-	return &ListComponent{
+func NewList(renderer *sdl.Renderer, maxVisibleItems int, itemFormatter func(index int, item Item) string) *List {
+	return &List{
 		renderer:        renderer,
 		itemFormatter:   itemFormatter,
 		maxVisibleItems: maxVisibleItems,
@@ -32,13 +32,13 @@ func NewListComponent(renderer *sdl.Renderer, maxVisibleItems int, itemFormatter
 	}
 }
 
-func (l *ListComponent) SetItems(items []Item) {
+func (l *List) SetItems(items []Item) {
 	l.items = items
 	l.selectedIndex = 0
 	l.scrollOffset = 0
 }
 
-func (l *ListComponent) ScrollDown() {
+func (l *List) ScrollDown() {
 	if l.selectedIndex < len(l.items)-1 {
 		l.selectedIndex++
 		if l.selectedIndex >= l.scrollOffset+l.maxVisibleItems {
@@ -47,7 +47,7 @@ func (l *ListComponent) ScrollDown() {
 	}
 }
 
-func (l *ListComponent) ScrollUp() {
+func (l *List) ScrollUp() {
 	if l.selectedIndex > 0 {
 		l.selectedIndex--
 		if l.selectedIndex < l.scrollOffset {
@@ -56,7 +56,7 @@ func (l *ListComponent) ScrollUp() {
 	}
 }
 
-func (l *ListComponent) Draw(primaryColor sdl.Color, selectedColor sdl.Color) {
+func (l *List) Draw(primaryColor sdl.Color, selectedColor sdl.Color) {
 	// Draw the items
 	startIndex := l.scrollOffset
 	endIndex := startIndex + l.maxVisibleItems
@@ -71,7 +71,7 @@ func (l *ListComponent) Draw(primaryColor sdl.Color, selectedColor sdl.Color) {
 			color = selectedColor
 		}
 		itemText := l.itemFormatter(index+startIndex, item)
-		textSurface, err := uilib.RenderText(itemText, color, config.BodyFont)
+		textSurface, err := uilib.RenderText(itemText, color, config.ListFont)
 		if err != nil {
 			output.Printf("Error rendering text: %v\n", err)
 			return
@@ -89,14 +89,14 @@ func (l *ListComponent) Draw(primaryColor sdl.Color, selectedColor sdl.Color) {
 	}
 }
 
-func (l *ListComponent) GetSelectedIndex() int {
+func (l *List) GetSelectedIndex() int {
 	return l.selectedIndex
 }
 
-func (l *ListComponent) GetScrollOffset() int {
+func (l *List) GetScrollOffset() int {
 	return l.scrollOffset
 }
 
-func (l *ListComponent) GetItems() []Item {
+func (l *List) GetItems() []Item {
 	return l.items
 }

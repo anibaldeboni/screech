@@ -15,17 +15,16 @@ import (
 
 type MainScreen struct {
 	renderer      *sdl.Renderer
-	listComponent *components.ListComponent
+	listComponent *components.List
 	initialized   bool
 }
 
 func NewMainScreen(renderer *sdl.Renderer) (*MainScreen, error) {
-	listComponent := components.NewListComponent(renderer, 19, func(index int, item components.Item) string {
-		return fmt.Sprintf("%d. %s", index+1, item.Text)
-	})
 	return &MainScreen{
-		renderer:      renderer,
-		listComponent: listComponent,
+		renderer: renderer,
+		listComponent: components.NewList(renderer, 18, func(index int, item components.Item) string {
+			return fmt.Sprintf("%d. %s", index+1, item.Text)
+		}),
 	}, nil
 }
 
@@ -64,6 +63,7 @@ func (m *MainScreen) HandleInput(event input.InputEvent) {
 			return
 		}
 		config.CurrentScreen = "scraping_screen"
+		config.CurrentSystem = m.SelectedSystem().ID
 		m.initialized = false
 	}
 	m.updateLogo()

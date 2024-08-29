@@ -10,7 +10,7 @@ import (
 	"github.com/veandco/go-sdl2/ttf"
 )
 
-type TextComponent struct {
+type TextArea struct {
 	renderer        *sdl.Renderer
 	text            string
 	lines           []string
@@ -20,8 +20,8 @@ type TextComponent struct {
 	maxWidth        int
 }
 
-func NewTextComponent(renderer *sdl.Renderer, text string, font *ttf.Font, maxVisibleLines int, maxWidth int) *TextComponent {
-	component := &TextComponent{
+func NewTextArea(renderer *sdl.Renderer, text string, font *ttf.Font, maxVisibleLines int, maxWidth int) *TextArea {
+	component := &TextArea{
 		renderer:        renderer,
 		text:            text,
 		maxVisibleLines: maxVisibleLines,
@@ -32,7 +32,7 @@ func NewTextComponent(renderer *sdl.Renderer, text string, font *ttf.Font, maxVi
 	return component
 }
 
-func (t *TextComponent) splitTextToLines() {
+func (t *TextArea) splitTextToLines() {
 	lines := strings.Split(t.text, "\n")
 
 	var wrappedLines []string
@@ -43,7 +43,7 @@ func (t *TextComponent) splitTextToLines() {
 	t.lines = wrappedLines
 }
 
-func (t *TextComponent) wrapLine(line string, maxWidth int) []string {
+func (t *TextArea) wrapLine(line string, maxWidth int) []string {
 	var wrappedLines []string
 	words := strings.Split(line, " ")
 	if len(words) == 0 {
@@ -65,19 +65,19 @@ func (t *TextComponent) wrapLine(line string, maxWidth int) []string {
 	return wrappedLines
 }
 
-func (t *TextComponent) ScrollDown() {
+func (t *TextArea) ScrollDown() {
 	if t.scrollOffset < len(t.lines)-t.maxVisibleLines {
 		t.scrollOffset++
 	}
 }
 
-func (t *TextComponent) ScrollUp() {
+func (t *TextArea) ScrollUp() {
 	if t.scrollOffset > 0 {
 		t.scrollOffset--
 	}
 }
 
-func (t *TextComponent) Draw(primaryColor sdl.Color) {
+func (t *TextArea) Draw(primaryColor sdl.Color) {
 	startIndex := t.scrollOffset
 	endIndex := startIndex + t.maxVisibleLines
 	if endIndex > len(t.lines) {
@@ -104,10 +104,10 @@ func (t *TextComponent) Draw(primaryColor sdl.Color) {
 	}
 }
 
-func (t *TextComponent) GetScrollOffset() int {
+func (t *TextArea) GetScrollOffset() int {
 	return t.scrollOffset
 }
 
-func (t *TextComponent) GetLines() []string {
+func (t *TextArea) GetLines() []string {
 	return t.lines
 }

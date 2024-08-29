@@ -28,7 +28,7 @@ var (
 	CurrentGame     string
 	BodyFont        *ttf.Font
 	HeaderFont      *ttf.Font
-	BodyBigFont     *ttf.Font
+	ListFont        *ttf.Font
 	LongTextFont    *ttf.Font
 	Colors          FontColors
 	ControlType     string
@@ -73,7 +73,7 @@ func InitVars() {
 	Thumbnail = config.Thumbnail
 	BodyFont = nil
 	HeaderFont = nil
-	BodyBigFont = nil
+	ListFont = nil
 	LongTextFont = nil
 	Colors = FontColors{
 		WHITE:     sdl.Color{R: 255, G: 255, B: 255, A: 255},
@@ -84,18 +84,18 @@ func InitVars() {
 }
 
 func defineSystemsIDs(systems []scraperSystem) map[string]string {
-	systemsIDs := make(map[string]string)
+	systemsIDs := make(map[string]string, len(systems))
 	for _, system := range systems {
 		systemsIDs[system.Dir] = system.ID
 	}
 	return systemsIDs
 }
 func defineSystemsNames(systems []scraperSystem) map[string]string {
-	systemsIDs := make(map[string]string)
+	systemsNames := make(map[string]string, len(systems))
 	for _, system := range systems {
-		systemsIDs[system.Dir] = system.Name
+		systemsNames[system.Dir] = system.Name
 	}
-	return systemsIDs
+	return systemsNames
 }
 func ScrapedImgDir() string {
 	dir := strings.ReplaceAll(Thumbnail.Dir, "/", string(filepath.Separator))
