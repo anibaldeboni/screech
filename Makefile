@@ -1,5 +1,5 @@
-DEV_ID := github.com/anibaldeboni/screech/screenscraper/screenscraper.DevID=${SS_DEV_ID}
-DEV_PASSWORD := github.com/anibaldeboni/screech/screenscraper/screenscraper.DevPassword=${SS_DEV_PASSWORD}
+DEV_ID := github.com/anibaldeboni/screech/screenscraper.DevID=${SS_DEV_ID}
+DEV_PASSWORD := github.com/anibaldeboni/screech/screenscraper.DevPassword=${SS_DEV_PASSWORD}
 CFLAGS := $(shell pkg-config --cflags sdl2)
 LDLAGS := $(shell pkg-config --libs SDL2_image SDL2_ttf) -ldl -lpthread -lm
 
@@ -27,4 +27,4 @@ build:
 	-o bin/app ./
 
 run:
-	go run -ldflags "-X '${DEV_ID}' -X '${DEV_PASSWORD}'" main.go
+	go run -ldflags "-X ${DEV_ID} -X ${DEV_PASSWORD}" main.go
