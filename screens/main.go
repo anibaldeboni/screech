@@ -64,6 +64,7 @@ func (m *MainScreen) HandleInput(event input.InputEvent) {
 		}
 		config.CurrentScreen = "scraping_screen"
 		config.CurrentSystem = m.SelectedSystem().ID
+		SetScraping()
 		m.initialized = false
 	}
 	m.updateLogo()

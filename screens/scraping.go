@@ -15,17 +15,17 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
+var scraping bool
+
 type ScrapingScreen struct {
 	renderer    *sdl.Renderer
 	textView    *components.TextView
 	initialized bool
-	scraping    bool
 }
 
 func NewScrapingScreen(renderer *sdl.Renderer) (*ScrapingScreen, error) {
 	return &ScrapingScreen{
 		renderer: renderer,
-		scraping: true,
 	}, nil
 }
 
@@ -35,10 +35,10 @@ func (s *ScrapingScreen) InitScraping() {
 	}
 	s.textView = components.NewTextView(s.renderer, 18)
 	s.initialized = true
+}
 
-	if s.scraping {
-		s.scrape()
-	}
+func SetScraping() {
+	scraping = false
 }
 
 func (m *ScrapingScreen) HandleInput(event input.InputEvent) {
@@ -73,6 +73,7 @@ func (s *ScrapingScreen) Draw() {
 	uilib.RenderTexture(s.renderer, config.UiControls, "Q3", "Q4")
 
 	s.renderer.Present()
+	s.scrape()
 }
 
 func hasScrapedImage(scrapeFile string) bool {
@@ -151,6 +152,11 @@ func download(ch chan string) {
 }
 
 func (s *ScrapingScreen) scrape() {
+	if scraping {
+		return
+	} else {
+		scraping = true
+	}
 	ch := make(chan string)
 
 	go download(ch)
@@ -158,6 +164,5 @@ func (s *ScrapingScreen) scrape() {
 		for msg := range ch {
 			s.textView.AddText(msg)
 		}
-		s.scraping = false
 	}(ch)
 }
