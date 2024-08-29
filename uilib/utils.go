@@ -150,28 +150,21 @@ func RenderImage(renderer *sdl.Renderer, imagePath string) {
 	}
 	defer textureTexture.Destroy()
 
-	// Get screen width and height
 	screenWidth, screenHeight := config.ScreenWidth, config.ScreenHeight
 	halfHeight := screenHeight / 2
 
-	// Get the dimensions of the texture
 	textureWidth, textureHeight := textureSurface.W, textureSurface.H
-
 	imgWidth, imgHeight := screenWidth/5, screenHeight/5
-
 	imgProportion := float64(imgWidth) / float64(imgHeight)
-
 	imgWidthProportional := int32(float64(imgWidth) * imgProportion)
 
-	// Calculate the rectangle covering the area between the quadrants
 	dstRect := sdl.Rect{
-		X: ((screenWidth / 4) * 3) - imgWidthProportional,
+		X: 890 - imgWidthProportional/2,
 		Y: halfHeight - imgHeight/2,
 		W: imgWidthProportional,
 		H: imgHeight,
 	}
 
-	// Calculate the source rectangle of the texture
 	srcRect := sdl.Rect{
 		X: 0,
 		Y: 0,
@@ -179,23 +172,7 @@ func RenderImage(renderer *sdl.Renderer, imagePath string) {
 		H: textureHeight,
 	}
 
-	// Render the texture adjusted to the area between the quadrants
 	renderer.Copy(textureTexture, &srcRect, &dstRect)
-}
-
-// Helper functions to calculate min and max
-func min(a, b int32) int32 {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-func max(a, b int32) int32 {
-	if a > b {
-		return a
-	}
-	return b
 }
 
 func RenderTextureAdjusted(renderer *sdl.Renderer, imagePath string, rect sdl.Rect) {

@@ -18,31 +18,31 @@ type FontColors struct {
 }
 
 var (
-	configFile      = "screech.yaml"
-	Debug           bool
-	ScreenWidth     = int32(1280)
-	ScreenHeight    = int32(720)
-	CurrentPlatform string
-	CurrentScreen   string
-	CurrentSystem   string
-	CurrentGame     string
-	BodyFont        *ttf.Font
-	HeaderFont      *ttf.Font
-	ListFont        *ttf.Font
-	LongTextFont    *ttf.Font
-	Colors          FontColors
-	ControlType     string
-	Roms            string
-	UiControls      = "assets/ui_controls_1280_720.bmp"
-	UiBackground    = "assets/bg.bmp"
-	UiOverlay       = "assets/bg_overlay.bmp"
-	Username        string
-	Password        string
-	SystemsIDs      map[string]string
-	SystemsNames    map[string]string
-	GameRegions     []string
-	Media           ScrapeMedia
-	Thumbnail       = thumbConfig{
+	configFile         = "screech.yaml"
+	Debug              bool
+	ScreenWidth        = int32(1280)
+	ScreenHeight       = int32(720)
+	CurrentScreen      string
+	CurrentSystem      string
+	CurrentGame        string
+	BodyFont           *ttf.Font
+	HeaderFont         *ttf.Font
+	ListFont           *ttf.Font
+	LongTextFont       *ttf.Font
+	Colors             FontColors
+	ControlType        string
+	Roms               string
+	UiControls         = "assets/ui_controls_1280_720.bmp"
+	UiBackground       = "assets/bg.bmp"
+	UiOverlay          = "assets/bg_overlay.bmp"
+	UiOverlaySelection = "assets/bg_overlay_selection.bmp"
+	Username           string
+	Password           string
+	SystemsIDs         map[string]string
+	SystemsNames       map[string]string
+	GameRegions        []string
+	Media              ScrapeMedia
+	Thumbnail          = thumbConfig{
 		Width:  400,
 		Height: 580,
 		Dir:    "thumbnails",
@@ -56,13 +56,10 @@ func InitVars() {
 		return
 	}
 	Debug = config.Debug
-	CurrentPlatform = "tsp"
 	CurrentScreen = "main_screen"
 	CurrentSystem = ""
 	CurrentGame = ""
 	ControlType = "keyboard"
-	ScreenWidth = config.Screen.Width
-	ScreenHeight = config.Screen.Height
 	Roms = config.Roms
 	Username = config.Screenscraper.Username
 	Password = config.Screenscraper.Password
@@ -76,8 +73,9 @@ func InitVars() {
 	ListFont = nil
 	LongTextFont = nil
 	Colors = FontColors{
-		WHITE:     sdl.Color{R: 255, G: 255, B: 255, A: 255},
-		PRIMARY:   sdl.Color{R: 255, G: 214, B: 255, A: 255},
+		WHITE: sdl.Color{R: 255, G: 255, B: 255, A: 255},
+		// PRIMARY:   sdl.Color{R: 255, G: 214, B: 255, A: 255},
+		PRIMARY:   sdl.Color{R: 113, G: 255, B: 142, A: 255},
 		SECONDARY: sdl.Color{R: 231, G: 192, B: 255, A: 255},
 		BLACK:     sdl.Color{R: 0, G: 0, B: 0, A: 255},
 	}
@@ -134,7 +132,6 @@ type thumbConfig struct {
 	Dir    string `yaml:"dir"`
 }
 type userConfigs struct {
-	Screen        screenConfig  `yaml:"screen"`
 	Roms          string        `yaml:"roms"`
 	Screenscraper scraperConfig `yaml:"screenscraper"`
 	Thumbnail     thumbConfig   `yaml:"thumbnail"`
@@ -153,10 +150,6 @@ func readConfigFile() (*userConfigs, error) {
 
 func SaveCurrent() {
 	config := userConfigs{
-		Screen: screenConfig{
-			Width:  ScreenWidth,
-			Height: ScreenHeight,
-		},
 		Roms: Roms,
 		Screenscraper: scraperConfig{
 			Username: Username,
