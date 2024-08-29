@@ -1,6 +1,3 @@
-screen:
-  width: 1280
-  height: 720
 roms: /mnt/SDCARD/Roms/
 screenscraper:
   username: my_username
@@ -14,6 +11,8 @@ screenscraper:
       - us
       - ame
       - wor
+      - eu
+      - jp
 systems:
   - dir: ADVMAME
     id: "75"
