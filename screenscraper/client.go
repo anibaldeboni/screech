@@ -20,9 +20,8 @@ import (
 type MediaType string
 
 var (
-	DevID       = "1234"
-	DevPassword = "password"
-	// url         = "https://www.screenscraper.fr/api2/jeuInfos.php?devid=${u%?}&devpassword=${p#??}&softname=crossmix&output=json&ssid=${userSS}&sspassword=${passSS}&sha1=&systemeid=${ssSystemID}&romtype=rom&romnom=${romNameTrimmed}.zip&romtaille=${rom_size}"
+	DevID                       = "1234"
+	DevPassword                 = "password"
 	BaseURL                     = "https://www.screenscraper.fr/api2/jeuInfos.php"
 	UnreadableBodyErr           = errors.New("unreadable body")
 	EmptyBodyErr                = errors.New("empty body")
