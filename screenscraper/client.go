@@ -110,12 +110,21 @@ findmedia:
 		return errors.New("media not found")
 	}
 
+	u, err := url.Parse(mediaURL)
+	if err != nil {
+		return fmt.Errorf("failed to parse media URL: %w", err)
+	}
+	q := u.Query()
+	q.Set("maxwidth", fmt.Sprintf("%d", config.Thumbnail.Width))
+	q.Set("maxheight", fmt.Sprintf("%d", config.Thumbnail.Height))
+	u.RawQuery = q.Encode()
+
 	destDir := filepath.Dir(dest)
 	if err := os.MkdirAll(destDir, os.ModePerm); err != nil {
 		return fmt.Errorf("failed to create destination directory: %w", err)
 	}
 
-	resp, err := http.Get(mediaURL)
+	resp, err := http.Get(u.String())
 	if err != nil {
 		return err
 	}
