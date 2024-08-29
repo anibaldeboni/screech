@@ -6,8 +6,7 @@ LDLAGS := $(shell pkg-config --libs SDL2_image SDL2_ttf) -ldl -lpthread -lm
 .PHONY: run build package
 .DEFAULT: package
 
-package: build
-	rm -rf Screech && \
+package: clean build
 	mkdir -p Screech/assets/logos && \
 	cp -r ./assets/*.bmp Screech/assets/ && \
 	cp -r ./includes/* Screech/ && \
@@ -25,6 +24,9 @@ build:
 	-buildvcs=false \
 	-ldflags "-X ${DEV_ID} -X ${DEV_PASSWORD}" \
 	-o bin/app ./
+
+clean:
+	rm -rf bin/* Screech
 
 run:
 	go run -ldflags "-X ${DEV_ID} -X ${DEV_PASSWORD}" main.go
