@@ -32,6 +32,7 @@ var (
 	Colors             FontColors
 	ControlType        string
 	Roms               string
+	Logos              string
 	UiControls         = "assets/ui_controls_1280_720.bmp"
 	UiBackground       = "assets/bg.bmp"
 	UiOverlay          = "assets/bg_overlay.bmp"
@@ -61,6 +62,7 @@ func InitVars() {
 	CurrentGame = ""
 	ControlType = "keyboard"
 	Roms = config.Roms
+	Logos = config.Logos
 	Username = config.Screenscraper.Username
 	Password = config.Screenscraper.Password
 	SystemsIDs = defineSystemsIDs(config.Screenscraper.Systems)
@@ -133,6 +135,7 @@ type thumbConfig struct {
 }
 type userConfigs struct {
 	Roms          string        `yaml:"roms"`
+	Logos         string        `yaml:"logos"`
 	Screenscraper scraperConfig `yaml:"screenscraper"`
 	Thumbnail     thumbConfig   `yaml:"thumbnail"`
 	Debug         bool          `yaml:"debug,omitempty"`

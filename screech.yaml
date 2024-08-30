@@ -1,7 +1,5 @@
-screen:
-  width: 1280
-  height: 720
 roms: SDCARD/
+logos: assets/logos
 screenscraper:
   username: my_username
   password: my_password

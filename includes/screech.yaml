@@ -1,4 +1,5 @@
-roms: /mnt/SDCARD/Roms/
+roms: /mnt/SDCARD/Roms/ # Path to the roms folder
+logos: /mnt/SDCARD/Icons/Default/Logos # Path to the console logos folder, should contain PNG files
 screenscraper:
   username: my_username
   password: my_password

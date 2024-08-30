@@ -78,7 +78,7 @@ func (m *MainScreen) HandleInput(event input.InputEvent) {
 func (m *MainScreen) updateLogo() {
 	selectedSystem := m.SelectedSystem()
 	config.CurrentSystem = selectedSystem.ID
-	uilib.RenderImage(m.renderer, "assets/logos/"+selectedSystem.ID+".png")
+	uilib.RenderImage(m.renderer, fmt.Sprintf("%s/%s.png", config.Logos, selectedSystem.ID))
 }
 
 func (m *MainScreen) SelectedSystem() components.Item {
@@ -88,12 +88,10 @@ func (m *MainScreen) SelectedSystem() components.Item {
 func (m *MainScreen) Draw() {
 	m.InitMain()
 
-	m.renderer.SetDrawColor(0, 0, 0, 255) // Background color
+	m.renderer.SetDrawColor(0, 0, 0, 255)
 	m.renderer.Clear()
 
 	uilib.RenderTexture(m.renderer, config.UiBackground, "Q2", "Q4")
-
-	// Draw the title
 	uilib.DrawText(m.renderer, "Systems", sdl.Point{X: 25, Y: 25}, config.Colors.PRIMARY, config.HeaderFont)
 	uilib.RenderTexture(m.renderer, config.UiOverlaySelection, "Q2", "Q4")
 
