@@ -4,7 +4,7 @@ screenscraper:
   username: my_username
   password: my_password
   media:
-    type: box-3D
+    type: box-3D # choose between box-2D, box-3D, mixrbv1, mixrbv2
     width: 400
     height: 580
     regions:
