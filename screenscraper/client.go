@@ -21,18 +21,19 @@ import (
 type MediaType string
 
 var (
-	DevID                       = "1234"
-	DevPassword                 = "password"
-	BaseURL                     = "https://www.screenscraper.fr/api2/jeuInfos.php"
-	UnreadableBodyErr           = errors.New("unreadable body")
-	EmptyBodyErr                = errors.New("empty body")
-	GameNotFoundErr             = errors.New("game not found")
-	APIClosedErr                = errors.New("API closed")
-	HTTPRequestErr              = errors.New("error making HTTP request")
-	Box2D             MediaType = "box-2D"
-	Box3D             MediaType = "box-3D"
-	MixV1             MediaType = "mixrbv1"
-	MixV2             MediaType = "mixrbv2"
+	DevID                           = "1234"
+	DevPassword                     = "password"
+	BaseURL                         = "https://www.screenscraper.fr/api2/jeuInfos.php"
+	UnreadableBodyErr               = errors.New("unreadable body")
+	EmptyBodyErr                    = errors.New("empty body")
+	GameNotFoundErr                 = errors.New("game not found")
+	APIClosedErr                    = errors.New("API closed")
+	HTTPRequestErr                  = errors.New("error making HTTP request")
+	HTTPRequestAbortedErr           = errors.New("request aborted")
+	Box2D                 MediaType = "box-2D"
+	Box3D                 MediaType = "box-3D"
+	MixV1                 MediaType = "mixrbv1"
+	MixV2                 MediaType = "mixrbv2"
 )
 
 const MAX_FILE_SIZE_BYTES = 104857600 // 100MB
@@ -66,6 +67,9 @@ func FindGame(ctx context.Context, systemID string, romPath string) (Response, e
 	}
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return result, HTTPRequestAbortedErr
+		}
 		return result, HTTPRequestErr
 	}
 	defer res.Body.Close()
