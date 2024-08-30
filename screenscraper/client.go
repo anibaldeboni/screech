@@ -29,6 +29,7 @@ var (
 	APIClosedErr                    = errors.New("API closed")
 	HTTPRequestErr                  = errors.New("error making HTTP request")
 	HTTPRequestAbortedErr           = errors.New("request aborted")
+	UnknownMediaTypeErr             = errors.New("unknown media type, choose among box-2D, box-3D, mixrbv1, mixrbv2")
 	Box2D                 MediaType = "box-2D"
 	Box3D                 MediaType = "box-3D"
 	MixV1                 MediaType = "mixrbv1"
@@ -139,7 +140,7 @@ func checkMediaType(mediaType MediaType) error {
 	case Box2D, Box3D, MixV1, MixV2:
 		return nil
 	default:
-		return errors.New("unknown media type, choose among box-2D, box-3D, mixrbv1, mixrbv2")
+		return UnknownMediaTypeErr
 	}
 }
 

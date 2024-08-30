@@ -109,75 +109,84 @@ func isInvalidRom(rom string) bool {
 	return !isValidRom(rom)
 }
 
-func download(ctx context.Context, cancel context.CancelFunc, ch chan<- string) {
-	var success int
-	var failed int
-	var skipped int
+func download(ctx context.Context, cancel context.CancelFunc) <-chan string {
+	ch := make(chan string)
 
-	defer close(ch)
-	romDir := filepath.Join(config.Roms, config.CurrentSystem)
-	dirEntries, err := os.ReadDir(romDir)
-	if err != nil {
-		ch <- fmt.Sprintf("Error reading directory: %v", err)
-		return
-	}
+	go func(ch chan<- string) {
+		var success int
+		var failed int
+		var skipped int
 
-findAndDownload:
-	for _, entry := range dirEntries {
-		select {
-		case <-ctx.Done():
-			break findAndDownload
-		default:
-			if entry.IsDir() {
-				continue
-			}
+		defer close(ch)
+		romDir := filepath.Join(config.Roms, config.CurrentSystem)
+		dirEntries, err := os.ReadDir(romDir)
+		if err != nil {
+			ch <- fmt.Sprintf("Error reading directory: %v", err)
+			return
+		}
 
-			rom := entry.Name()
-
-			if isInvalidRom(rom) {
-				ch <- fmt.Sprintf("Skipping %s", rom)
-				skipped++
-				continue
-			}
-			scrapeFile := filepath.Join(config.ScrapedImgDir(), strings.ReplaceAll(rom, filepath.Ext(rom), ".png"))
-			if hasScrapedImage(scrapeFile) {
-				ch <- fmt.Sprintf("Skipping %s, image already scraped", rom)
-				skipped++
-				continue
-			}
-
-			ch <- fmt.Sprintf("Scraping %s", rom)
-			if res, err := screenscraper.FindGame(ctx, config.SystemsIDs[config.CurrentSystem], rom); err != nil {
-				if errors.Is(err, screenscraper.HTTPRequestAbortedErr) {
-					break findAndDownload
+	findAndDownload:
+		for _, entry := range dirEntries {
+			select {
+			case <-ctx.Done():
+				break findAndDownload
+			default:
+				if entry.IsDir() {
+					continue
 				}
-				ch <- fmt.Sprintf("Error scraping %s: %v", rom, err)
-				failed++
-			} else {
 
-				if err := screenscraper.DownloadMedia(ctx, res.Response.Jeu.Medias, screenscraper.MediaType(config.Media.Type), scrapeFile); err != nil {
-					ch <- fmt.Sprintf("Error: %v", err)
+				rom := entry.Name()
+
+				if isInvalidRom(rom) {
+					ch <- fmt.Sprintf("Skipping %s", rom)
+					skipped++
+					continue
+				}
+				scrapeFile := filepath.Join(config.ScrapedImgDir(), strings.ReplaceAll(rom, filepath.Ext(rom), ".png"))
+				if hasScrapedImage(scrapeFile) {
+					ch <- fmt.Sprintf("Skipping %s, image already scraped", rom)
+					skipped++
+					continue
+				}
+
+				ch <- fmt.Sprintf("Scraping %s", rom)
+				if res, err := screenscraper.FindGame(ctx, config.SystemsIDs[config.CurrentSystem], rom); err != nil {
+					if errors.Is(err, screenscraper.HTTPRequestAbortedErr) {
+						break findAndDownload
+					}
+					ch <- fmt.Sprintf("Error scraping %s: %v", rom, err)
 					failed++
 				} else {
-					ch <- fmt.Sprintf("Scrapped %s", filepath.Base(scrapeFile))
-					success++
+
+					if err := screenscraper.DownloadMedia(ctx, res.Response.Jeu.Medias, screenscraper.MediaType(config.Media.Type), scrapeFile); err != nil {
+						ch <- fmt.Sprintf("Error: %v", err)
+						failed++
+						if errors.Is(err, screenscraper.UnknownMediaTypeErr) {
+							break findAndDownload
+						}
+					} else {
+						ch <- fmt.Sprintf("Scrapped %s", filepath.Base(scrapeFile))
+						success++
+					}
 				}
 			}
 		}
-	}
 
-	var completionMsg string
-	if !errors.Is(ctx.Err(), context.Canceled) {
-		completionMsg = "Scraping finished."
-		cancel()
-	} else {
-		completionMsg = "Scraping aborted!"
-	}
+		var completionMsg string
+		if !errors.Is(ctx.Err(), context.Canceled) {
+			completionMsg = "Scraping finished."
+			cancel()
+		} else {
+			completionMsg = "Scraping aborted!"
+		}
 
-	ch <- completionMsg
-	ch <- fmt.Sprintf("Success: %d", success)
-	ch <- fmt.Sprintf("Failed: %d", failed)
-	ch <- fmt.Sprintf("Skipped: %d", skipped)
+		ch <- completionMsg
+		ch <- fmt.Sprintf("Success: %d", success)
+		ch <- fmt.Sprintf("Failed: %d", failed)
+		ch <- fmt.Sprintf("Skipped: %d", skipped)
+	}(ch)
+
+	return ch
 }
 
 func (s *ScrapingScreen) scrape() {
@@ -186,13 +195,11 @@ func (s *ScrapingScreen) scrape() {
 	} else {
 		scraping = true
 	}
-	ch := make(chan string)
 	s.ctx, s.cancel = context.WithCancel(context.Background())
 
-	go download(s.ctx, s.cancel, ch)
 	go func(ch <-chan string) {
 		for msg := range ch {
 			s.textView.AddText(msg)
 		}
-	}(ch)
+	}(download(s.ctx, s.cancel))
 }

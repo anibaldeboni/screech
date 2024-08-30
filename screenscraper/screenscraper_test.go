@@ -220,7 +220,7 @@ func TestDownloadMediaInvalidMediaType(t *testing.T) {
 		t.Error("Expected error, got nil")
 	}
 
-	if !strings.Contains(err.Error(), "unknown media type") {
-		t.Errorf("Expected unknown media type error, got %s", err.Error())
+	if !errors.Is(err, screenscraper.UnknownMediaTypeErr) {
+		t.Errorf("Expected Unknown Media Type error, got %v", err)
 	}
 }
