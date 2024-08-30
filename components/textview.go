@@ -12,13 +12,15 @@ type TextView struct {
 	lines           []string
 	YOffset         int
 	maxVisibleLines int
+	position        sdl.Point
 }
 
-func NewTextView(renderer *sdl.Renderer, maxVisibleItems int) *TextView {
+func NewTextView(renderer *sdl.Renderer, maxVisibleItems int, position sdl.Point) *TextView {
 	return &TextView{
 		renderer:        renderer,
 		maxVisibleLines: maxVisibleItems,
 		lines:           []string{},
+		position:        position,
 	}
 }
 
@@ -96,7 +98,7 @@ func (t *TextView) Draw(textColor sdl.Color) {
 		}
 		defer texture.Destroy()
 
-		t.renderer.Copy(texture, nil, &sdl.Rect{X: 40, Y: 90 + 30*int32(index), W: textSurface.W, H: textSurface.H})
+		t.renderer.Copy(texture, nil, &sdl.Rect{X: t.position.X, Y: t.position.Y + 30*int32(index), W: textSurface.W, H: textSurface.H})
 	}
 }
 

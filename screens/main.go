@@ -22,9 +22,14 @@ type MainScreen struct {
 func NewMainScreen(renderer *sdl.Renderer) (*MainScreen, error) {
 	return &MainScreen{
 		renderer: renderer,
-		listComponent: components.NewList(renderer, 18, func(index int, item components.Item) string {
-			return fmt.Sprintf("%d. %s", index+1, item.Text)
-		}),
+		listComponent: components.NewList(
+			renderer,
+			18,
+			sdl.Point{X: 45, Y: 95},
+			func(index int, item components.Item) string {
+				return fmt.Sprintf("%d. %s", index+1, item.Text)
+			},
+		),
 	}, nil
 }
 

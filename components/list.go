@@ -21,14 +21,16 @@ type List struct {
 	scrollOffset    int
 	itemFormatter   func(index int, item Item) string
 	maxVisibleItems int
+	position        sdl.Point
 }
 
-func NewList(renderer *sdl.Renderer, maxVisibleItems int, itemFormatter func(index int, item Item) string) *List {
+func NewList(renderer *sdl.Renderer, maxVisibleItems int, position sdl.Point, itemFormatter func(index int, item Item) string) *List {
 	return &List{
 		renderer:        renderer,
 		itemFormatter:   itemFormatter,
 		maxVisibleItems: maxVisibleItems,
 		items:           []Item{},
+		position:        position,
 	}
 }
 
@@ -85,7 +87,7 @@ func (l *List) Draw(primaryColor sdl.Color, selectedColor sdl.Color) {
 		}
 		defer texture.Destroy()
 
-		l.renderer.Copy(texture, nil, &sdl.Rect{X: 40, Y: 90 + 30*int32(index), W: textSurface.W, H: textSurface.H})
+		l.renderer.Copy(texture, nil, &sdl.Rect{X: l.position.X, Y: l.position.Y + 30*int32(index), W: textSurface.W, H: textSurface.H})
 	}
 }
 
