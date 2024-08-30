@@ -7,7 +7,7 @@
   <img href="https://github.com/anibaldeboni/rapper/releases/latest" alt="GitHub Release" src="https://img.shields.io/github/v/release/anibaldeboni/screech?logo=semanticrelease">
   </p>
 
-Screech is a game image scraper implemented in Go and SDL2 ans was designed with Trimui Smart Pro in mind and uses [Screenscraper.fr](https://www.screenscraper.fr/) as the backend. It's inspired by Schmurtz [Scraper](https://github.com/schmurtzm/TrimUI-Smart-Pro/tree/main/Scraper) with the addition to be easier to configure and port to other handhelds.
+Screech is a game image scraper implemented in Go and SDL2 and was designed with Trimui Smart Pro in mind and uses [Screenscraper.fr](https://www.screenscraper.fr/) as the backend. It's inspired by Schmurtz [Scraper](https://github.com/schmurtzm/TrimUI-Smart-Pro/tree/main/Scraper) with the addition to be easier to configure and port to other handhelds.
 
 ![Screench main screen](./assets/screenshot.png)
 
