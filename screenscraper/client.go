@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"hash/crc32"
 	"io"
 	"net/http"
 	"net/url"
@@ -36,16 +35,56 @@ var (
 	MixV2                 MediaType = "mixrbv2"
 )
 
-const MAX_FILE_SIZE_BYTES = 104857600 // 100MB
+const maxFileSizeBytes = 104857600 // 100MB
 
 func FindGame(ctx context.Context, systemID string, romPath string) (Response, error) {
 	var result Response
 
-	u, err := url.Parse(BaseURL)
+	res, err := get(ctx, parseFindGameURL(systemID, romPath))
 	if err != nil {
 		return result, err
 	}
 
+	if err := json.Unmarshal(res, &result); err != nil {
+		return result, UnreadableBodyErr
+	}
+
+	return result, nil
+}
+
+func DownloadMedia(ctx context.Context, medias []Media, mediaType MediaType, dest string) error {
+	if err := checkDestination(dest); err != nil {
+		return err
+	}
+
+	if err := checkMediaType(mediaType); err != nil {
+		return err
+	}
+
+	mediaURL, err := findMediaURLByRegion(medias, mediaType)
+	if err != nil {
+		return err
+	}
+
+	mediaURL, err = addWHToMediaURL(mediaURL)
+	if err != nil {
+		return err
+	}
+
+	res, err := get(ctx, mediaURL)
+	if err != nil {
+		return err
+	}
+
+	if err := saveToDisk(dest, res); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func parseFindGameURL(systemID, romPath string) string {
+	u, _ := url.Parse(BaseURL)
 	q := u.Query()
 	q.Set("devid", DevID)
 	q.Set("devpassword", DevPassword)
@@ -58,52 +97,12 @@ func FindGame(ctx context.Context, systemID string, romPath string) (Response, e
 	q.Set("romtype", "rom")
 	q.Set("romnom", cleanRomName(romPath)+".zip")
 	q.Set("romtaille", fmt.Sprintf("%d", fileSize(romPath)))
-
 	u.RawQuery = q.Encode()
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
-	if err != nil {
-		return result, HTTPRequestErr
-	}
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		if errors.Is(err, context.Canceled) {
-			return result, HTTPRequestAbortedErr
-		}
-		return result, HTTPRequestErr
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return result, UnreadableBodyErr
-	}
-
-	s := string(body)
-	switch {
-	case strings.Contains(s, "API closed"):
-		return result, APIClosedErr
-	case strings.Contains(s, "Erreur"):
-		return result, GameNotFoundErr
-	case s == "":
-		return result, EmptyBodyErr
-	}
-
-	if err := json.Unmarshal(body, &result); err != nil {
-		return result, err
-	}
-
-	return result, nil
+	return u.String()
 }
 
-func DownloadMedia(ctx context.Context, medias []Media, mediaType MediaType, dest string) error {
+func findMediaURLByRegion(medias []Media, mediaType MediaType) (string, error) {
 	var mediaURL string
-
-	if _, err := os.Stat(dest); err == nil {
-		return fmt.Errorf("destination file already exists: %s", dest)
-	} else if !os.IsNotExist(err) {
-		return fmt.Errorf("failed to check if destination file exists: %w", err)
-	}
 
 findmedia:
 	for _, r := range config.GameRegions {
@@ -116,63 +115,90 @@ findmedia:
 	}
 
 	if mediaURL == "" {
-		return errors.New("media not found")
+		return mediaURL, fmt.Errorf("media not found for regions: %v", config.GameRegions)
 	}
 
+	return mediaURL, nil
+}
+
+func addWHToMediaURL(mediaURL string) (string, error) {
 	u, err := url.Parse(mediaURL)
 	if err != nil {
-		return fmt.Errorf("failed to parse media URL: %w", err)
+		return "", fmt.Errorf("failed to parse media URL: %w", err)
 	}
 	q := u.Query()
 	q.Set("maxwidth", fmt.Sprintf("%d", config.Thumbnail.Width))
 	q.Set("maxheight", fmt.Sprintf("%d", config.Thumbnail.Height))
 	u.RawQuery = q.Encode()
 
-	destDir := filepath.Dir(dest)
-	if err := os.MkdirAll(destDir, os.ModePerm); err != nil {
-		return fmt.Errorf("failed to create destination directory: %w", err)
-	}
+	return u.String(), nil
+}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
-	if err != nil {
-		return fmt.Errorf("failed to create HTTP request: %w", err)
+func checkMediaType(mediaType MediaType) error {
+	switch mediaType {
+	case Box2D, Box3D, MixV1, MixV2:
+		return nil
+	default:
+		return errors.New("unknown media type, choose among box-2D, box-3D, mixrbv1, mixrbv2")
 	}
-	res, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return fmt.Errorf("failed to download media: %w", err)
-	}
-	defer res.Body.Close()
+}
 
-	file, err := os.Create(dest)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	if _, err := io.Copy(file, res.Body); err != nil {
-		return err
+func checkDestination(dest string) error {
+	if _, err := os.Stat(dest); err == nil {
+		return fmt.Errorf("destination file already exists: %s", dest)
+	} else if !os.IsNotExist(err) {
+		return fmt.Errorf("failed to check if destination file exists: %w", err)
 	}
 
 	return nil
 }
 
-func CRC32Sum(filePath string) string {
-	file, err := os.Open(filePath)
+func get(ctx context.Context, url string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return ""
+		return nil, err
 	}
-	defer file.Close()
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		if errors.Is(err, context.Canceled) {
+			return nil, HTTPRequestAbortedErr
+		}
+		return nil, HTTPRequestErr
+	}
+	defer res.Body.Close()
 
-	hash := crc32.NewIEEE()
-	if _, err := io.Copy(hash, file); err != nil {
-		return ""
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, UnreadableBodyErr
 	}
 
-	return fmt.Sprintf("%x", hash.Sum(nil))
+	s := string(body)
+	switch {
+	case strings.Contains(s, "API closed"):
+		return nil, APIClosedErr
+	case strings.Contains(s, "Erreur"):
+		return nil, GameNotFoundErr
+	case s == "":
+		return nil, EmptyBodyErr
+	}
+
+	return body, nil
+}
+
+func saveToDisk(dest string, file []byte) error {
+	if err := os.MkdirAll(filepath.Dir(dest), os.ModePerm); err != nil {
+		return fmt.Errorf("failed to create destination directory: %w", err)
+	}
+
+	if err := os.WriteFile(dest, file, os.ModePerm); err != nil {
+		return fmt.Errorf("failed to write file to disk: %w", err)
+	}
+
+	return nil
 }
 
 func SHA1Sum(filePath string) string {
-	if fileSize(filePath) > MAX_FILE_SIZE_BYTES {
+	if fileSize(filePath) > maxFileSizeBytes {
 		return ""
 	}
 
