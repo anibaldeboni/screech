@@ -25,7 +25,6 @@ var (
 	scraping        bool
 	findGame        = scraper.FindGame
 	downloadMedia   = scraper.DownloadMedia
-	walkDir         = filepath.WalkDir
 	hasScrapedImage = func(scrapeFile string) bool {
 		_, err := os.Stat(scrapeFile)
 		if os.IsNotExist(err) {
@@ -168,10 +167,10 @@ func findRoms(ctx context.Context, events chan<- string, romDir string, maxDepth
 
 	go func() {
 		defer close(roms)
-		err := walkDir(romDir, func(path string, d fs.DirEntry, err error) error {
+		err := filepath.WalkDir(romDir, func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				events <- fmt.Sprintf("Error reading directory: %v", err)
-				return nil
+				return err
 			}
 
 			select {

@@ -3,7 +3,7 @@ package screens
 import (
 	"context"
 	"errors"
-	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -14,81 +14,61 @@ import (
 	"github.com/anibaldeboni/screech/scraper"
 )
 
-type mockDirEntry struct {
-	name  string
-	isDir bool
-}
-
-func (m mockDirEntry) Name() string               { return m.name }
-func (m mockDirEntry) IsDir() bool                { return m.isDir }
-func (m mockDirEntry) Type() fs.FileMode          { return 0 }
-func (m mockDirEntry) Info() (fs.FileInfo, error) { return nil, nil }
-
-func mockWalkDir(romDir string, maxSubDirs int, paths []string) func(string, fs.WalkDirFunc) error {
-	return func(root string, fn fs.WalkDirFunc) error {
-		for _, path := range paths {
-			depth := len(strings.Split(path, string(filepath.Separator))) - len(strings.Split(romDir, string(filepath.Separator)))
-			if depth > maxSubDirs {
-				continue
-			}
-			entry := mockDirEntry{name: filepath.Base(path), isDir: strings.HasSuffix(path, "/")}
-			if err := fn(path, entry, nil); err != nil {
-				if err == filepath.SkipDir {
-					continue
-				}
-				return err
-			}
-		}
-		return nil
-	}
-}
-
 func TestFindRoms(t *testing.T) {
 	tests := []struct {
-		name       string
-		romDir     string
-		maxSubDirs int
-		paths      []string
-		expected   []string
+		name      string
+		setup     func(t *testing.T) string
+		maxDepth  int
+		expected  []string
+		expectErr bool
 	}{
 		{
-			name:       "Basic test",
-			romDir:     "/roms",
-			maxSubDirs: 2,
-			paths:      []string{"/roms/game1.rom", "/roms/game2.rom", "/roms/subdir/game3.rom"},
-			expected:   []string{"game1.rom", "game2.rom", "game3.rom"},
+			name: "Basic test",
+			setup: func(t *testing.T) string {
+				dir := t.TempDir()
+				os.WriteFile(filepath.Join(dir, "game1.rom"), []byte{}, 0644)
+				os.WriteFile(filepath.Join(dir, "game2.rom"), []byte{}, 0644)
+				os.Mkdir(filepath.Join(dir, "subdir"), 0755)
+				os.WriteFile(filepath.Join(dir, "subdir", "game3.rom"), []byte{}, 0644)
+				return dir
+			},
+			maxDepth: 2,
+			expected: []string{"game1.rom", "game2.rom", "game3.rom"},
 		},
 		{
-			name:       "Skip hidden directories",
-			romDir:     "/roms",
-			maxSubDirs: 2,
-			paths:      []string{"/roms/.hidden/", "/roms/game2.rom"},
-			expected:   []string{"game2.rom"},
+			name: "Skip hidden directories",
+			setup: func(t *testing.T) string {
+				dir := t.TempDir()
+				os.Mkdir(filepath.Join(dir, ".hidden"), 0755)
+				os.WriteFile(filepath.Join(dir, ".hidden", "game1.rom"), []byte{}, 0644)
+				os.WriteFile(filepath.Join(dir, "game2.rom"), []byte{}, 0644)
+				return dir
+			},
+			maxDepth: 2,
+			expected: []string{"game2.rom"},
 		},
 		{
-			name:       "Skip directories beyond maxSubDirs",
-			romDir:     "/roms",
-			maxSubDirs: 1,
-			paths:      []string{"/roms/game1.rom", "/roms/subdir/game2.rom"},
-			expected:   []string{"game1.rom"},
+			name: "Skip directories beyond maxDepth",
+			setup: func(t *testing.T) string {
+				dir := t.TempDir()
+				os.WriteFile(filepath.Join(dir, "game1.rom"), []byte{}, 0644)
+				os.Mkdir(filepath.Join(dir, "subdir"), 0755)
+				os.WriteFile(filepath.Join(dir, "subdir", "game2.rom"), []byte{}, 0644)
+				return dir
+			},
+			maxDepth: 1,
+			expected: []string{"game1.rom"},
 		},
 	}
-
-	originalWalkDir := walkDir
-	defer func() {
-		walkDir = originalWalkDir
-	}()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
+			dir := tt.setup(t)
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 			defer cancel()
 
-			walkDir = mockWalkDir(tt.romDir, tt.maxSubDirs, tt.paths)
-
 			events := make(chan string, 10)
-			roms := findRoms(ctx, events, tt.romDir, tt.maxSubDirs)
+			roms := findRoms(ctx, events, dir, tt.maxDepth)
 
 			var result []string
 			for rom := range roms {
@@ -102,6 +82,17 @@ func TestFindRoms(t *testing.T) {
 			for i, rom := range result {
 				if rom != tt.expected[i] {
 					t.Errorf("expected rom %s, got %s", tt.expected[i], rom)
+				}
+			}
+
+			if tt.expectErr {
+				select {
+				case event := <-events:
+					if !strings.Contains(event, "Error reading directory") {
+						t.Errorf("expected error event, got %s", event)
+					}
+				default:
+					t.Error("expected error event, but no event received")
 				}
 			}
 		})
