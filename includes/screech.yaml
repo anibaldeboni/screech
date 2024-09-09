@@ -1,8 +1,10 @@
 roms: /mnt/SDCARD/Roms/ # Path to the roms folder
 logos: /mnt/SDCARD/Icons/Default/Logos # Path to the console logos folder, should contain PNG files
+max-scan-depth: 2 # Maximum number of subdirectories to scan for roms
 screenscraper:
   username: my_username
   password: my_password
+  threads: 1 # Number of threads to use for scraping
   media:
     type: box-3D # choose between box-2D, box-3D, mixrbv1, mixrbv2
     width: 400

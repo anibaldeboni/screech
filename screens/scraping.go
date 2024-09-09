@@ -4,9 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
+	"sync"
+	"sync/atomic"
 
 	"github.com/anibaldeboni/screech/components"
 	"github.com/anibaldeboni/screech/config"
@@ -17,7 +21,26 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-var scraping bool
+var (
+	scraping        bool
+	findGame        = screenscraper.FindGame
+	downloadMedia   = screenscraper.DownloadMedia
+	walkDir         = filepath.WalkDir
+	hasScrapedImage = func(scrapeFile string) bool {
+		_, err := os.Stat(scrapeFile)
+		if os.IsNotExist(err) {
+			return false
+		}
+
+		return true
+	}
+)
+
+type counter struct {
+	success, failed, skipped *atomic.Uint32
+}
+
+type DirWalker func(string, fs.WalkDirFunc) error
 
 type ScrapingScreen struct {
 	renderer    *sdl.Renderer
@@ -84,109 +107,17 @@ func (s *ScrapingScreen) Draw() {
 	s.scrape()
 }
 
-func hasScrapedImage(scrapeFile string) bool {
-	_, err := os.Stat(scrapeFile)
-	if os.IsNotExist(err) {
-		return false
-	}
-
-	return true
-}
-
 func isValidRom(rom string) bool {
-	invalidExts := []string{".cue", ".m3u", ".jpg", ".png", ".img", ".sub", ".db", ".xml", ".txt", ".dat"}
-	ext := filepath.Ext(rom)
-	for _, invalidExt := range invalidExts {
-		if strings.EqualFold(ext, invalidExt) {
-			return false
-		}
+	switch filepath.Ext(rom) {
+	case ".cue", ".m3u", ".jpg", ".png", ".img", ".sub", ".db", ".xml", ".txt", ".dat":
+		return false
+	default:
+		return true
 	}
-
-	return true
 }
 
 func isInvalidRom(rom string) bool {
 	return !isValidRom(rom)
-}
-
-func download(ctx context.Context, cancel context.CancelFunc) <-chan string {
-	ch := make(chan string)
-
-	go func(ch chan<- string) {
-		var success int
-		var failed int
-		var skipped int
-
-		defer close(ch)
-		romDir := filepath.Join(config.Roms, config.CurrentSystem)
-		dirEntries, err := os.ReadDir(romDir)
-		if err != nil {
-			ch <- fmt.Sprintf("Error reading directory: %v", err)
-			return
-		}
-
-	findAndDownload:
-		for _, entry := range dirEntries {
-			select {
-			case <-ctx.Done():
-				break findAndDownload
-			default:
-				if entry.IsDir() {
-					continue
-				}
-
-				rom := entry.Name()
-
-				if isInvalidRom(rom) {
-					ch <- fmt.Sprintf("Skipping %s", rom)
-					skipped++
-					continue
-				}
-				scrapeFile := filepath.Join(config.ScrapedImgDir(), strings.ReplaceAll(rom, filepath.Ext(rom), ".png"))
-				if hasScrapedImage(scrapeFile) {
-					ch <- fmt.Sprintf("Skipping %s, image already scraped", rom)
-					skipped++
-					continue
-				}
-
-				ch <- fmt.Sprintf("Scraping %s", rom)
-				if res, err := screenscraper.FindGame(ctx, config.SystemsIDs[config.CurrentSystem], rom); err != nil {
-					if errors.Is(err, screenscraper.HTTPRequestAbortedErr) {
-						break findAndDownload
-					}
-					ch <- fmt.Sprintf("Error scraping %s: %v", rom, err)
-					failed++
-				} else {
-
-					if err := screenscraper.DownloadMedia(ctx, res.Response.Jeu.Medias, screenscraper.MediaType(config.Media.Type), scrapeFile); err != nil {
-						ch <- fmt.Sprintf("Error: %v", err)
-						failed++
-						if errors.Is(err, screenscraper.UnknownMediaTypeErr) {
-							break findAndDownload
-						}
-					} else {
-						ch <- fmt.Sprintf("Scrapped %s", filepath.Base(scrapeFile))
-						success++
-					}
-				}
-			}
-		}
-
-		var completionMsg string
-		if !errors.Is(ctx.Err(), context.Canceled) {
-			completionMsg = "Scraping finished."
-			cancel()
-		} else {
-			completionMsg = "Scraping aborted!"
-		}
-
-		ch <- completionMsg
-		ch <- fmt.Sprintf("Success: %d", success)
-		ch <- fmt.Sprintf("Failed: %d", failed)
-		ch <- fmt.Sprintf("Skipped: %d", skipped)
-	}(ch)
-
-	return ch
 }
 
 func (s *ScrapingScreen) scrape() {
@@ -196,10 +127,159 @@ func (s *ScrapingScreen) scrape() {
 		scraping = true
 	}
 	s.ctx, s.cancel = context.WithCancel(context.Background())
+	events := make(chan string)
+	roms := findRoms(s.ctx, events, filepath.Join(config.Roms, config.CurrentSystem), config.MaxScanDepth)
+
+	if roms == nil {
+		events <- "Scraping aborted!"
+		s.cancel()
+		return
+	}
+
+	go buildWorkerPool(s.ctx, s.cancel, config.Threads, roms, events)
 
 	go func(ch <-chan string) {
 		for msg := range ch {
 			s.textView.AddText(msg)
 		}
-	}(download(s.ctx, s.cancel))
+	}(events)
+}
+
+func findRelativePath(romDir string, system string) string {
+	splittedPath := strings.Split(romDir, string(filepath.Separator))
+	systemIndex := slices.Index(splittedPath, system)
+
+	return filepath.Join(splittedPath[systemIndex:]...)
+}
+
+func calculateDepth(rootDir, targetDir string) (int, error) {
+	relativePath, err := filepath.Rel(rootDir, targetDir)
+	if err != nil {
+		return -1, err
+	}
+	if relativePath == "." {
+		return 0, nil
+	}
+	return len(strings.Split(relativePath, string(filepath.Separator))), nil
+}
+
+func findRoms(ctx context.Context, events chan<- string, romDir string, maxDepth int) <-chan string {
+	roms := make(chan string, 15)
+
+	go func() {
+		defer close(roms)
+		err := walkDir(romDir, func(path string, d fs.DirEntry, err error) error {
+			if err != nil {
+				events <- fmt.Sprintf("Error reading directory: %v", err)
+				return nil
+			}
+
+			select {
+			case <-ctx.Done():
+				return ctx.Err()
+			default:
+				if d.IsDir() {
+					depth, err := calculateDepth(romDir, path)
+					if err != nil {
+						events <- fmt.Sprintf("Error getting relative path: %v", err)
+						return nil
+					}
+
+					if depth > maxDepth-1 || strings.HasPrefix(filepath.Base(path), ".") {
+						return filepath.SkipDir
+					}
+					events <- fmt.Sprintf("Scanning %s", findRelativePath(path, config.CurrentSystem))
+				} else {
+					roms <- filepath.Base(path)
+				}
+				return nil
+			}
+		})
+		if err != nil && err != context.Canceled {
+			events <- fmt.Sprintf("Error walking the path: %v", err)
+		}
+	}()
+
+	return roms
+}
+
+func buildWorkerPool(ctx context.Context, cancel context.CancelFunc, workers int, roms <-chan string, events chan<- string) {
+	var (
+		success, failed, skipped atomic.Uint32
+		wg                       sync.WaitGroup
+	)
+
+	wg.Add(workers)
+	for i := 0; i < workers; i++ {
+		go worker(ctx, &wg, roms, events, &counter{&success, &failed, &skipped})
+	}
+
+	go func() {
+		wg.Wait()
+		defer close(events)
+		var completionMsg string
+		if errors.Is(ctx.Err(), context.Canceled) {
+			completionMsg = "Scraping aborted!"
+		} else {
+			completionMsg = "Scraping finished."
+			cancel()
+		}
+
+		events <- completionMsg
+		events <- fmt.Sprintf("Success: %d", success.Load())
+		events <- fmt.Sprintf("Failed: %d", failed.Load())
+		events <- fmt.Sprintf("Skipped: %d", skipped.Load())
+	}()
+}
+
+func worker(
+	ctx context.Context,
+	wg *sync.WaitGroup,
+	roms <-chan string,
+	events chan<- string,
+	count *counter,
+) {
+	defer wg.Done()
+
+download:
+	for rom := range roms {
+		select {
+		case <-ctx.Done():
+			break download
+		default:
+			romName := strings.TrimSuffix(rom, filepath.Ext(rom))
+
+			if isInvalidRom(rom) {
+				events <- fmt.Sprintf("Skipping %s: invalid file", rom)
+				count.skipped.Add(1)
+				continue
+			}
+			scrapeFile := filepath.Join(config.ScrapedImgDir(), romName+".png")
+			if hasScrapedImage(scrapeFile) {
+				events <- fmt.Sprintf("Skipping %s: image already scraped", romName)
+				count.skipped.Add(1)
+				continue
+			}
+
+			if res, err := findGame(ctx, config.SystemsIDs[config.CurrentSystem], rom); err != nil {
+				if errors.Is(err, screenscraper.HTTPRequestAbortedErr) {
+					break download
+				}
+				events <- fmt.Sprintf("Error scraping %s: %v", romName, err)
+				count.failed.Add(1)
+			} else {
+
+				if err := downloadMedia(ctx, res.Response.Jeu.Medias, screenscraper.MediaType(config.Media.Type), scrapeFile); err != nil {
+					events <- fmt.Sprintf("Error scraping %s: %v", romName, err)
+					count.failed.Add(1)
+					if errors.Is(err, screenscraper.UnknownMediaTypeErr) {
+						break download
+					}
+				} else {
+					events <- fmt.Sprintf("Scrapped %s", romName)
+					count.success.Add(1)
+				}
+			}
+		}
+	}
 }

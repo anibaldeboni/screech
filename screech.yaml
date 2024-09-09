@@ -1,8 +1,10 @@
 roms: SDCARD/
 logos: assets/logos
+max-scan-depth: 2
 screenscraper:
   username: my_username
   password: my_password
+  threads: 3
   media:
     type: box-3D
     width: 400

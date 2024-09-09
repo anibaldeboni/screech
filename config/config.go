@@ -48,6 +48,8 @@ var (
 		Height: 580,
 		Dir:    "thumbnails",
 	}
+	Threads      = 1
+	MaxScanDepth = 2
 )
 
 func InitVars() {
@@ -63,8 +65,10 @@ func InitVars() {
 	ControlType = "keyboard"
 	Roms = config.Roms
 	Logos = config.Logos
+	MaxScanDepth = config.MaxScanDepth
 	Username = config.Screenscraper.Username
 	Password = config.Screenscraper.Password
+	Threads = config.Screenscraper.Threads
 	SystemsIDs = defineSystemsIDs(config.Screenscraper.Systems)
 	SystemsNames = defineSystemsNames(config.Screenscraper.Systems)
 	GameRegions = config.Screenscraper.Media.Regions
@@ -107,6 +111,7 @@ func ScrapedImgDir() string {
 type scraperConfig struct {
 	Username string          `yaml:"username"`
 	Password string          `yaml:"password"`
+	Threads  int             `yaml:"threads"`
 	Media    ScrapeMedia     `yaml:"media"`
 	Systems  []scraperSystem `yaml:"systems"`
 }
@@ -136,6 +141,7 @@ type thumbConfig struct {
 type userConfigs struct {
 	Roms          string        `yaml:"roms"`
 	Logos         string        `yaml:"logos"`
+	MaxScanDepth  int           `yaml:"max-scan-depth"`
 	Screenscraper scraperConfig `yaml:"screenscraper"`
 	Thumbnail     thumbConfig   `yaml:"thumbnail"`
 	Debug         bool          `yaml:"debug,omitempty"`
