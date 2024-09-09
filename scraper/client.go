@@ -1,4 +1,4 @@
-package screenscraper
+package scraper
 
 import (
 	"context"
@@ -38,8 +38,8 @@ var (
 
 const maxFileSizeBytes = 104857600 // 100MB
 
-func FindGame(ctx context.Context, systemID string, romPath string) (Response, error) {
-	var result Response
+func FindGame(ctx context.Context, systemID string, romPath string) (GameInfoResponse, error) {
+	var result GameInfoResponse
 
 	res, err := get(ctx, parseFindGameURL(systemID, romPath))
 	if err != nil {

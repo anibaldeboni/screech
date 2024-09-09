@@ -1,6 +1,6 @@
-package screenscraper
+package scraper
 
-type Response struct {
+type GameInfoResponse struct {
 	Header struct {
 		APIversion       string `json:"APIversion"`
 		DateTime         string `json:"dateTime"`

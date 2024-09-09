@@ -1,4 +1,4 @@
-package screenscraper_test
+package scraper_test
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/anibaldeboni/screech/config"
-	"github.com/anibaldeboni/screech/screenscraper"
+	"github.com/anibaldeboni/screech/scraper"
 )
 
 func setupStubServer(t *testing.T, resp string) *httptest.Server {
@@ -19,8 +19,8 @@ func setupStubServer(t *testing.T, resp string) *httptest.Server {
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			switch r.URL.Path {
 			case "/find-games":
-				res := screenscraper.Response{}
-				res.Response.Jeu.Medias = []screenscraper.Media{
+				res := scraper.GameInfoResponse{}
+				res.Response.Jeu.Medias = []scraper.Media{
 					{
 						URL:    "http://example.com",
 						Type:   "box-3D",
@@ -58,8 +58,8 @@ func TestFindGame(t *testing.T) {
 	server := setupStubServer(t, "")
 	defer server.Close()
 
-	screenscraper.BaseURL = server.URL + "/find-games"
-	res, err := screenscraper.FindGame(context.Background(), "4", "game")
+	scraper.BaseURL = server.URL + "/find-games"
+	res, err := scraper.FindGame(context.Background(), "4", "game")
 	if err != nil {
 		t.Error(err)
 	}
@@ -73,12 +73,12 @@ func TestFindGameCancelContext(t *testing.T) {
 	server := setupStubServer(t, "")
 	defer server.Close()
 
-	screenscraper.BaseURL = server.URL + "/find-games"
+	scraper.BaseURL = server.URL + "/find-games"
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	_, err := screenscraper.FindGame(ctx, "4", "game")
+	_, err := scraper.FindGame(ctx, "4", "game")
 
-	if !errors.Is(err, screenscraper.HTTPRequestAbortedErr) {
+	if !errors.Is(err, scraper.HTTPRequestAbortedErr) {
 		t.Errorf("Expected HTTP Request Aborted error, got %v", err)
 	}
 }
@@ -92,17 +92,17 @@ func TestFindGameResponseErrors(t *testing.T) {
 		{
 			name: "HTTP Request Error",
 			resp: "API closed",
-			err:  screenscraper.APIClosedErr,
+			err:  scraper.APIClosedErr,
 		},
 		{
 			name: "Game Not Found",
 			resp: "Erreur",
-			err:  screenscraper.GameNotFoundErr,
+			err:  scraper.GameNotFoundErr,
 		},
 		{
 			name: "Empty Body",
 			resp: "",
-			err:  screenscraper.EmptyBodyErr,
+			err:  scraper.EmptyBodyErr,
 		},
 	}
 	for _, tt := range tests {
@@ -110,8 +110,8 @@ func TestFindGameResponseErrors(t *testing.T) {
 			server := setupStubServer(t, tt.resp)
 			defer server.Close()
 
-			screenscraper.BaseURL = server.URL + "/errors"
-			_, err := screenscraper.FindGame(context.Background(), "4", "game")
+			scraper.BaseURL = server.URL + "/errors"
+			_, err := scraper.FindGame(context.Background(), "4", "game")
 			if !errors.Is(err, tt.err) {
 				t.Errorf("Expected %v, got %v", tt.err, err)
 			}
@@ -128,17 +128,17 @@ func TestDownloadMedia(t *testing.T) {
 
 	defer server.Close()
 
-	screenscraper.BaseURL = server.URL + "/get-media"
+	scraper.BaseURL = server.URL + "/get-media"
 	config.GameRegions = []string{"br"}
-	err := screenscraper.DownloadMedia(
+	err := scraper.DownloadMedia(
 		context.Background(),
-		[]screenscraper.Media{
+		[]scraper.Media{
 			{
 				URL:    server.URL + "/get-media",
 				Type:   "box-3D",
 				Region: "br",
 			},
-		}, screenscraper.Box3D, "screenshot.png")
+		}, scraper.Box3D, "screenshot.png")
 
 	os.Remove("screenshot.png")
 
@@ -152,23 +152,23 @@ func TestDownloadMediaCancelContext(t *testing.T) {
 
 	defer server.Close()
 
-	screenscraper.BaseURL = server.URL + "/get-media"
+	scraper.BaseURL = server.URL + "/get-media"
 	config.GameRegions = []string{"br"}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	err := screenscraper.DownloadMedia(
+	err := scraper.DownloadMedia(
 		ctx,
-		[]screenscraper.Media{
+		[]scraper.Media{
 			{
 				URL:    server.URL + "/get-media",
 				Type:   "box-3D",
 				Region: "br",
 			},
-		}, screenscraper.Box3D, "screenshot.png")
+		}, scraper.Box3D, "screenshot.png")
 
-	if !errors.Is(err, screenscraper.HTTPRequestAbortedErr) {
+	if !errors.Is(err, scraper.HTTPRequestAbortedErr) {
 		t.Errorf("Expected HTTP Request Aborted error, got %v", err)
 	}
 }
@@ -178,17 +178,17 @@ func TestDownloadMediaInvalidRegion(t *testing.T) {
 
 	defer server.Close()
 
-	screenscraper.BaseURL = server.URL + "/get-media"
+	scraper.BaseURL = server.URL + "/get-media"
 	config.GameRegions = []string{"ar"}
-	err := screenscraper.DownloadMedia(
+	err := scraper.DownloadMedia(
 		context.Background(),
-		[]screenscraper.Media{
+		[]scraper.Media{
 			{
 				URL:    server.URL + "/get-media",
 				Type:   "box-3D",
 				Region: "br",
 			},
-		}, screenscraper.Box3D, "screenshot.png")
+		}, scraper.Box3D, "screenshot.png")
 
 	if err == nil {
 		t.Error("Expected error, got nil")
@@ -204,23 +204,23 @@ func TestDownloadMediaInvalidMediaType(t *testing.T) {
 
 	defer server.Close()
 
-	screenscraper.BaseURL = server.URL + "/get-media"
+	scraper.BaseURL = server.URL + "/get-media"
 	config.GameRegions = []string{"br"}
-	err := screenscraper.DownloadMedia(
+	err := scraper.DownloadMedia(
 		context.Background(),
-		[]screenscraper.Media{
+		[]scraper.Media{
 			{
 				URL:    server.URL + "/get-media",
 				Type:   "box-3D",
 				Region: "br",
 			},
-		}, screenscraper.MediaType("invalid-media"), "screenshot.png")
+		}, scraper.MediaType("invalid-media"), "screenshot.png")
 
 	if err == nil {
 		t.Error("Expected error, got nil")
 	}
 
-	if !errors.Is(err, screenscraper.UnknownMediaTypeErr) {
+	if !errors.Is(err, scraper.UnknownMediaTypeErr) {
 		t.Errorf("Expected Unknown Media Type error, got %v", err)
 	}
 }

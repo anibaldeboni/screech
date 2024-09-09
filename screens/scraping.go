@@ -15,7 +15,7 @@ import (
 	"github.com/anibaldeboni/screech/components"
 	"github.com/anibaldeboni/screech/config"
 	"github.com/anibaldeboni/screech/input"
-	"github.com/anibaldeboni/screech/screenscraper"
+	"github.com/anibaldeboni/screech/scraper"
 	"github.com/anibaldeboni/screech/uilib"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -23,8 +23,8 @@ import (
 
 var (
 	scraping        bool
-	findGame        = screenscraper.FindGame
-	downloadMedia   = screenscraper.DownloadMedia
+	findGame        = scraper.FindGame
+	downloadMedia   = scraper.DownloadMedia
 	walkDir         = filepath.WalkDir
 	hasScrapedImage = func(scrapeFile string) bool {
 		_, err := os.Stat(scrapeFile)
@@ -262,17 +262,17 @@ download:
 			}
 
 			if res, err := findGame(ctx, config.SystemsIDs[config.CurrentSystem], rom); err != nil {
-				if errors.Is(err, screenscraper.HTTPRequestAbortedErr) {
+				if errors.Is(err, scraper.HTTPRequestAbortedErr) {
 					break download
 				}
 				events <- fmt.Sprintf("Error scraping %s: %v", romName, err)
 				count.failed.Add(1)
 			} else {
 
-				if err := downloadMedia(ctx, res.Response.Jeu.Medias, screenscraper.MediaType(config.Media.Type), scrapeFile); err != nil {
+				if err := downloadMedia(ctx, res.Response.Jeu.Medias, scraper.MediaType(config.Media.Type), scrapeFile); err != nil {
 					events <- fmt.Sprintf("Error scraping %s: %v", romName, err)
 					count.failed.Add(1)
-					if errors.Is(err, screenscraper.UnknownMediaTypeErr) {
+					if errors.Is(err, scraper.UnknownMediaTypeErr) {
 						break download
 					}
 				} else {

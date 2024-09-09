@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anibaldeboni/screech/screenscraper"
+	"github.com/anibaldeboni/screech/scraper"
 )
 
 type mockDirEntry struct {
@@ -109,15 +109,15 @@ func TestFindRoms(t *testing.T) {
 }
 
 type mockScreenscraper struct {
-	findGameFunc      func(ctx context.Context, systemID int, rom string) (*screenscraper.Response, error)
-	downloadMediaFunc func(ctx context.Context, medias []screenscraper.Media, mediaType screenscraper.MediaType, dest string) error
+	findGameFunc      func(ctx context.Context, systemID int, rom string) (*scraper.GameInfoResponse, error)
+	downloadMediaFunc func(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error
 }
 
-func (m *mockScreenscraper) FindGame(ctx context.Context, systemID int, rom string) (*screenscraper.Response, error) {
+func (m *mockScreenscraper) FindGame(ctx context.Context, systemID int, rom string) (*scraper.GameInfoResponse, error) {
 	return m.findGameFunc(ctx, systemID, rom)
 }
 
-func (m *mockScreenscraper) DownloadMedia(ctx context.Context, medias []screenscraper.Media, mediaType screenscraper.MediaType, dest string) error {
+func (m *mockScreenscraper) DownloadMedia(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error {
 	return m.downloadMediaFunc(ctx, medias, mediaType, dest)
 }
 
@@ -125,8 +125,8 @@ func TestWorker(t *testing.T) {
 	tests := []struct {
 		name                string
 		roms                []string
-		findGameFunc        func(ctx context.Context, systemID string, romPath string) (screenscraper.Response, error)
-		downloadMediaFunc   func(context.Context, []screenscraper.Media, screenscraper.MediaType, string) error
+		findGameFunc        func(ctx context.Context, systemID string, romPath string) (scraper.GameInfoResponse, error)
+		downloadMediaFunc   func(context.Context, []scraper.Media, scraper.MediaType, string) error
 		hasScrapedImageFunc func(string) bool
 		expectedEvents      []string
 		expectedCounts      counter
@@ -134,10 +134,10 @@ func TestWorker(t *testing.T) {
 		{
 			name: "Valid ROM",
 			roms: []string{"game1.rom"},
-			findGameFunc: func(ctx context.Context, systemID string, rom string) (screenscraper.Response, error) {
-				return screenscraper.Response{}, nil
+			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
+				return scraper.GameInfoResponse{}, nil
 			},
-			downloadMediaFunc: func(ctx context.Context, medias []screenscraper.Media, mediaType screenscraper.MediaType, dest string) error {
+			downloadMediaFunc: func(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error {
 				return nil
 			},
 			hasScrapedImageFunc: func(rom string) bool {
@@ -149,10 +149,10 @@ func TestWorker(t *testing.T) {
 		{
 			name: "Invalid ROM",
 			roms: []string{"game1.txt"},
-			findGameFunc: func(ctx context.Context, systemID string, rom string) (screenscraper.Response, error) {
-				return screenscraper.Response{}, nil
+			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
+				return scraper.GameInfoResponse{}, nil
 			},
-			downloadMediaFunc: func(ctx context.Context, medias []screenscraper.Media, mediaType screenscraper.MediaType, dest string) error {
+			downloadMediaFunc: func(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error {
 				return nil
 			},
 			hasScrapedImageFunc: func(rom string) bool {
@@ -164,10 +164,10 @@ func TestWorker(t *testing.T) {
 		{
 			name: "Already scraped ROM",
 			roms: []string{"game1.rom"},
-			findGameFunc: func(ctx context.Context, systemID string, rom string) (screenscraper.Response, error) {
-				return screenscraper.Response{}, nil
+			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
+				return scraper.GameInfoResponse{}, nil
 			},
-			downloadMediaFunc: func(ctx context.Context, medias []screenscraper.Media, mediaType screenscraper.MediaType, dest string) error {
+			downloadMediaFunc: func(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error {
 				return nil
 			},
 			hasScrapedImageFunc: func(rom string) bool {
@@ -179,10 +179,10 @@ func TestWorker(t *testing.T) {
 		{
 			name: "Scraping error",
 			roms: []string{"game1.rom"},
-			findGameFunc: func(ctx context.Context, systemID string, rom string) (screenscraper.Response, error) {
-				return screenscraper.Response{}, errors.New("scraping error")
+			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
+				return scraper.GameInfoResponse{}, errors.New("scraping error")
 			},
-			downloadMediaFunc: func(ctx context.Context, medias []screenscraper.Media, mediaType screenscraper.MediaType, dest string) error {
+			downloadMediaFunc: func(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error {
 				return nil
 			},
 			hasScrapedImageFunc: func(rom string) bool {
@@ -260,8 +260,8 @@ func TestBuildWorkerPool(t *testing.T) {
 	tests := []struct {
 		name                string
 		roms                []string
-		findGameFunc        func(ctx context.Context, systemID string, romPath string) (screenscraper.Response, error)
-		downloadMediaFunc   func(context.Context, []screenscraper.Media, screenscraper.MediaType, string) error
+		findGameFunc        func(ctx context.Context, systemID string, romPath string) (scraper.GameInfoResponse, error)
+		downloadMediaFunc   func(context.Context, []scraper.Media, scraper.MediaType, string) error
 		hasScrapedImageFunc func(string) bool
 		expectedEvents      []string
 		expectedCounts      counter
@@ -269,10 +269,10 @@ func TestBuildWorkerPool(t *testing.T) {
 		{
 			name: "All valid ROMs",
 			roms: []string{"game1.rom", "game2.rom"},
-			findGameFunc: func(ctx context.Context, systemID string, rom string) (screenscraper.Response, error) {
-				return screenscraper.Response{}, nil
+			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
+				return scraper.GameInfoResponse{}, nil
 			},
-			downloadMediaFunc: func(ctx context.Context, medias []screenscraper.Media, mediaType screenscraper.MediaType, dest string) error {
+			downloadMediaFunc: func(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error {
 				return nil
 			},
 			hasScrapedImageFunc: func(rom string) bool {
@@ -284,10 +284,10 @@ func TestBuildWorkerPool(t *testing.T) {
 		{
 			name: "Some invalid ROMs",
 			roms: []string{"game1.rom", "game2.txt"},
-			findGameFunc: func(ctx context.Context, systemID string, rom string) (screenscraper.Response, error) {
-				return screenscraper.Response{}, nil
+			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
+				return scraper.GameInfoResponse{}, nil
 			},
-			downloadMediaFunc: func(ctx context.Context, medias []screenscraper.Media, mediaType screenscraper.MediaType, dest string) error {
+			downloadMediaFunc: func(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error {
 				return nil
 			},
 			hasScrapedImageFunc: func(rom string) bool {
@@ -299,10 +299,10 @@ func TestBuildWorkerPool(t *testing.T) {
 		{
 			name: "Already scraped ROMs",
 			roms: []string{"game1.rom", "game2.rom"},
-			findGameFunc: func(ctx context.Context, systemID string, rom string) (screenscraper.Response, error) {
-				return screenscraper.Response{}, nil
+			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
+				return scraper.GameInfoResponse{}, nil
 			},
-			downloadMediaFunc: func(ctx context.Context, medias []screenscraper.Media, mediaType screenscraper.MediaType, dest string) error {
+			downloadMediaFunc: func(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error {
 				return nil
 			},
 			hasScrapedImageFunc: func(rom string) bool {
@@ -314,10 +314,10 @@ func TestBuildWorkerPool(t *testing.T) {
 		{
 			name: "Scraping error",
 			roms: []string{"game1.rom"},
-			findGameFunc: func(ctx context.Context, systemID string, rom string) (screenscraper.Response, error) {
-				return screenscraper.Response{}, errors.New("scraping error")
+			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
+				return scraper.GameInfoResponse{}, errors.New("scraping error")
 			},
-			downloadMediaFunc: func(ctx context.Context, medias []screenscraper.Media, mediaType screenscraper.MediaType, dest string) error {
+			downloadMediaFunc: func(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error {
 				return nil
 			},
 			hasScrapedImageFunc: func(rom string) bool {
