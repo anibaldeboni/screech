@@ -26,10 +26,10 @@ func TestFindRoms(t *testing.T) {
 			name: "Basic test",
 			setup: func(t *testing.T) string {
 				dir := t.TempDir()
-				os.WriteFile(filepath.Join(dir, "game1.rom"), []byte{}, 0644)
-				os.WriteFile(filepath.Join(dir, "game2.rom"), []byte{}, 0644)
-				os.Mkdir(filepath.Join(dir, "subdir"), 0755)
-				os.WriteFile(filepath.Join(dir, "subdir", "game3.rom"), []byte{}, 0644)
+				_ = os.WriteFile(filepath.Join(dir, "game1.rom"), []byte{}, 0644)
+				_ = os.WriteFile(filepath.Join(dir, "game2.rom"), []byte{}, 0644)
+				_ = os.Mkdir(filepath.Join(dir, "subdir"), 0755)
+				_ = os.WriteFile(filepath.Join(dir, "subdir", "game3.rom"), []byte{}, 0644)
 				return dir
 			},
 			maxDepth: 2,
@@ -39,9 +39,9 @@ func TestFindRoms(t *testing.T) {
 			name: "Skip hidden directories",
 			setup: func(t *testing.T) string {
 				dir := t.TempDir()
-				os.Mkdir(filepath.Join(dir, ".hidden"), 0755)
-				os.WriteFile(filepath.Join(dir, ".hidden", "game1.rom"), []byte{}, 0644)
-				os.WriteFile(filepath.Join(dir, "game2.rom"), []byte{}, 0644)
+				_ = os.Mkdir(filepath.Join(dir, ".hidden"), 0755)
+				_ = os.WriteFile(filepath.Join(dir, ".hidden", "game1.rom"), []byte{}, 0644)
+				_ = os.WriteFile(filepath.Join(dir, "game2.rom"), []byte{}, 0644)
 				return dir
 			},
 			maxDepth: 2,
@@ -51,9 +51,9 @@ func TestFindRoms(t *testing.T) {
 			name: "Skip directories beyond maxDepth",
 			setup: func(t *testing.T) string {
 				dir := t.TempDir()
-				os.WriteFile(filepath.Join(dir, "game1.rom"), []byte{}, 0644)
-				os.Mkdir(filepath.Join(dir, "subdir"), 0755)
-				os.WriteFile(filepath.Join(dir, "subdir", "game2.rom"), []byte{}, 0644)
+				_ = os.WriteFile(filepath.Join(dir, "game1.rom"), []byte{}, 0644)
+				_ = os.Mkdir(filepath.Join(dir, "subdir"), 0755)
+				_ = os.WriteFile(filepath.Join(dir, "subdir", "game2.rom"), []byte{}, 0644)
 				return dir
 			},
 			maxDepth: 1,
@@ -97,19 +97,6 @@ func TestFindRoms(t *testing.T) {
 			}
 		})
 	}
-}
-
-type mockScreenscraper struct {
-	findGameFunc      func(ctx context.Context, systemID int, rom string) (*scraper.GameInfoResponse, error)
-	downloadMediaFunc func(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error
-}
-
-func (m *mockScreenscraper) FindGame(ctx context.Context, systemID int, rom string) (*scraper.GameInfoResponse, error) {
-	return m.findGameFunc(ctx, systemID, rom)
-}
-
-func (m *mockScreenscraper) DownloadMedia(ctx context.Context, medias []scraper.Media, mediaType scraper.MediaType, dest string) error {
-	return m.downloadMediaFunc(ctx, medias, mediaType, dest)
 }
 
 func TestWorker(t *testing.T) {

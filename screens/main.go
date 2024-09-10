@@ -88,8 +88,8 @@ func (m *MainScreen) SelectedSystem() components.Item {
 func (m *MainScreen) Draw() {
 	m.InitMain()
 
-	m.renderer.SetDrawColor(0, 0, 0, 255)
-	m.renderer.Clear()
+	_ = m.renderer.SetDrawColor(0, 0, 0, 255)
+	_ = m.renderer.Clear()
 
 	uilib.RenderTexture(m.renderer, config.UiBackground, "Q2", "Q4")
 	uilib.DrawText(m.renderer, "Systems", sdl.Point{X: 25, Y: 25}, config.Colors.PRIMARY, config.HeaderFont)

@@ -128,10 +128,6 @@ type ScrapeMedia struct {
 	Height  int32    `yaml:"height"`
 	Regions []string `yaml:"regions"`
 }
-type screenConfig struct {
-	Width  int32 `yaml:"width"`
-	Height int32 `yaml:"height"`
-}
 
 type thumbConfig struct {
 	Width  int32  `yaml:"width"`

@@ -96,9 +96,9 @@ func (t *TextView) Draw(textColor sdl.Color) {
 			output.Printf("Error creating texture: %v\n", err)
 			return
 		}
-		defer texture.Destroy()
+		defer func() { _ = texture.Destroy() }()
 
-		t.renderer.Copy(texture, nil, &sdl.Rect{X: t.position.X, Y: t.position.Y + 30*int32(index), W: textSurface.W, H: textSurface.H})
+		_ = t.renderer.Copy(texture, nil, &sdl.Rect{X: t.position.X, Y: t.position.Y + 30*int32(index), W: textSurface.W, H: textSurface.H})
 	}
 }
 

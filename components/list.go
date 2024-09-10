@@ -85,9 +85,9 @@ func (l *List) Draw(primaryColor sdl.Color, selectedColor sdl.Color) {
 			output.Printf("Error creating texture: %v\n", err)
 			return
 		}
-		defer texture.Destroy()
+		defer func() { _ = texture.Destroy() }()
 
-		l.renderer.Copy(texture, nil, &sdl.Rect{X: l.position.X, Y: l.position.Y + 30*int32(index), W: textSurface.W, H: textSurface.H})
+		_ = l.renderer.Copy(texture, nil, &sdl.Rect{X: l.position.X, Y: l.position.Y + 30*int32(index), W: textSurface.W, H: textSurface.H})
 	}
 }
 

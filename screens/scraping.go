@@ -27,11 +27,7 @@ var (
 	downloadMedia   = scraper.DownloadMedia
 	hasScrapedImage = func(scrapeFile string) bool {
 		_, err := os.Stat(scrapeFile)
-		if os.IsNotExist(err) {
-			return false
-		}
-
-		return true
+		return !os.IsNotExist(err)
 	}
 )
 
@@ -86,8 +82,8 @@ func (m *ScrapingScreen) HandleInput(event input.InputEvent) {
 func (s *ScrapingScreen) Draw() {
 	s.InitScraping()
 
-	s.renderer.SetDrawColor(0, 0, 0, 255) // Background color
-	s.renderer.Clear()
+	_ = s.renderer.SetDrawColor(0, 0, 0, 255) // Background color
+	_ = s.renderer.Clear()
 
 	uilib.RenderTexture(s.renderer, config.UiBackground, "Q2", "Q4")
 	uilib.RenderTexture(s.renderer, config.UiOverlay, "Q2", "Q4")

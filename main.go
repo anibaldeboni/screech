@@ -56,13 +56,17 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer window.Destroy()
+	defer func() {
+		_ = window.Destroy()
+	}()
 
 	renderer, err := sdl.CreateRenderer(window, -1, sdl.RENDERER_ACCELERATED)
 	if err != nil {
 		panic(err)
 	}
-	defer renderer.Destroy()
+	defer func() {
+		_ = renderer.Destroy()
+	}()
 
 	mainScreen, err := screens.NewMainScreen(renderer)
 	if err != nil {

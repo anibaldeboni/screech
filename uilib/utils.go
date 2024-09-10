@@ -51,7 +51,9 @@ func DrawText(renderer *sdl.Renderer, text string, position sdl.Point, color sdl
 		output.Printf("Error creating texture: %v\n", err)
 		return
 	}
-	defer textTexture.Destroy()
+	defer func() {
+		_ = textTexture.Destroy()
+	}()
 
 	// Set the destination rectangle for the texture
 	destinationRect := sdl.Rect{
@@ -62,7 +64,7 @@ func DrawText(renderer *sdl.Renderer, text string, position sdl.Point, color sdl
 	}
 
 	// Copy the texture to the renderer
-	renderer.Copy(textTexture, nil, &destinationRect)
+	_ = renderer.Copy(textTexture, nil, &destinationRect)
 }
 
 // RenderText renders text to an SDL surface
@@ -89,7 +91,9 @@ func RenderTexture(renderer *sdl.Renderer, imagePath string, startQuadrant, endQ
 		output.Printf("Error creating texture from image: %v\n", err)
 		return
 	}
-	defer textureTexture.Destroy()
+	defer func() {
+		_ = textureTexture.Destroy()
+	}()
 
 	// Get screen width and height
 	screenWidth, screenHeight := config.ScreenWidth, config.ScreenHeight
@@ -132,7 +136,7 @@ func RenderTexture(renderer *sdl.Renderer, imagePath string, startQuadrant, endQ
 	}
 
 	// Render the texture adjusted to the area between the quadrants
-	renderer.Copy(textureTexture, &srcRect, &dstRect)
+	_ = renderer.Copy(textureTexture, &srcRect, &dstRect)
 }
 
 func RenderImage(renderer *sdl.Renderer, imagePath string) {
@@ -148,7 +152,9 @@ func RenderImage(renderer *sdl.Renderer, imagePath string) {
 		output.Printf("Error creating texture from image: %v\n", err)
 		return
 	}
-	defer textureTexture.Destroy()
+	defer func() {
+		_ = textureTexture.Destroy()
+	}()
 
 	screenWidth, screenHeight := config.ScreenWidth, config.ScreenHeight
 	halfHeight := screenHeight / 2
@@ -172,7 +178,7 @@ func RenderImage(renderer *sdl.Renderer, imagePath string) {
 		H: textureHeight,
 	}
 
-	renderer.Copy(textureTexture, &srcRect, &dstRect)
+	_ = renderer.Copy(textureTexture, &srcRect, &dstRect)
 }
 
 func RenderTextureAdjusted(renderer *sdl.Renderer, imagePath string, rect sdl.Rect) {
@@ -190,10 +196,12 @@ func RenderTextureAdjusted(renderer *sdl.Renderer, imagePath string, rect sdl.Re
 		output.Printf("Error creating texture from image: %v\n", err)
 		return
 	}
-	defer textureTexture.Destroy()
+	defer func() {
+		_ = textureTexture.Destroy()
+	}()
 
 	// Draw the texture at the specified position and size
-	renderer.Copy(textureTexture, nil, &rect)
+	_ = renderer.Copy(textureTexture, nil, &rect)
 }
 
 // WrapText splits a long text into multiple lines based on the specified maximum width.

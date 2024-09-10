@@ -1,0 +1,15 @@
+linters: #enable extra linters in addition to the default
+  enable:
+    - gofmt
+
+run:
+  timeout: 5m
+
+issues:
+  exclude-rules:
+    - source: "^func Test"
+      linters:
+        - funlen
+    - linters:
+        - typecheck
+      text: "has no field or method"

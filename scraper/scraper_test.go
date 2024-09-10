@@ -34,7 +34,7 @@ func setupStubServer(t *testing.T, resp string) *httptest.Server {
 				if err != nil {
 					t.Error(err)
 				}
-				w.Write(body)
+				_, _ = w.Write(body)
 			case "/get-media":
 				file, _ := os.Open("../assets/screenshot.png")
 				defer file.Close()
@@ -47,7 +47,7 @@ func setupStubServer(t *testing.T, resp string) *httptest.Server {
 			case "/errors":
 				w.WriteHeader(http.StatusBadRequest)
 				w.Header().Set("Content-Type", "text/plain")
-				w.Write([]byte(resp))
+				_, _ = w.Write([]byte(resp))
 			default:
 				t.Errorf("Invalid route: %s", r.URL.Path)
 			}
