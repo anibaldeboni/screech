@@ -17,7 +17,6 @@ build:
 	CGO_CFLAGS="${CFLAGS}" \
 	CGO_LDFLAGS="${LDLAGS}" \
 	GOARCH=arm64 \
-	CC=aarch64-linux-gnu-gcc \
 	go build \
 	-tags static \
 	-buildvcs=false \
