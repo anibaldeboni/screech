@@ -16,6 +16,9 @@ jobs:
           go-version-file: go.mod
           cache: false
 
+      - name: Install SDL2
+        run: sudo apt install libsdl2{,-image,-mixer,-ttf,-gfx}-dev
+
       - name: Download dependencies
         run: go mod download -x
 
