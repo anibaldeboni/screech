@@ -3,7 +3,7 @@ DEV_PASSWORD := github.com/anibaldeboni/screech/screenscraper.DevPassword=${SS_D
 CFLAGS := $(shell pkg-config --cflags sdl2)
 LDLAGS := $(shell pkg-config --libs SDL2_image SDL2_ttf) -ldl -lpthread -lm
 
-.PHONY: run build package
+.PHONY: run build package lint test
 .DEFAULT: package
 
 package: clean build
@@ -29,3 +29,9 @@ clean:
 
 run:
 	go run -ldflags "-X ${DEV_ID} -X ${DEV_PASSWORD}" main.go
+
+lint: ##@dev Run lint (download from https://golangci-lint.run/usage/install/#local-installation)
+	golangci-lint run -v
+
+test:
+	go test -cover -v ./...

@@ -1,0 +1,23 @@
+name: Tests
+
+on: workflow_call
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: go.mod
+          cache: false
+
+      - name: Download dependencies
+        run: go mod download -x
+
+      - name: Run tests
+        run: make test
