@@ -1,0 +1,32 @@
+# .github/workflows/release.yml
+name: Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-release:
+    name: Build assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v2
+
+      - name: Run the build process with Docker
+        uses: addnab/docker-run-action@v3
+        env:
+          SS_DEV_ID: ${{ secrets.SS_DEV_ID }}
+          SS_DEV_PASSWORD: ${{ secrets.SS_DEV_PASSWORD }}
+        with:
+          image: anibaldeboni/trimui-smart-pro-toolchain:latest
+          options: -v ${{ github.workspace }}:/root/workspace
+          run: |
+            make
+            zip -r ScreechApp.zip Screech/
+
+      - name: upload assets to release
+        uses: softprops/action-gh-release@v1
+        if: ${{startsWith(github.ref, 'refs/tags/') }}
+        with:
+          files: ./ScreechApp.zip
