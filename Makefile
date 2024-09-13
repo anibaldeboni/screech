@@ -1,20 +1,19 @@
-DEV_ID := github.com/anibaldeboni/screech/screenscraper.DevID=${SS_DEV_ID}
-DEV_PASSWORD := github.com/anibaldeboni/screech/screenscraper.DevPassword=${SS_DEV_PASSWORD}
+MODULE := github.com/anibaldeboni/screech
+DEV_ID := ${MODULE}/scraper.DevID=${SS_DEV_ID}
+DEV_PASSWORD := ${MODULE}/scraper.DevPassword=${SS_DEV_PASSWORD}
 CFLAGS := $(shell pkg-config --cflags sdl2)
 LDLAGS := $(shell pkg-config --libs SDL2_image SDL2_ttf) -ldl -lpthread -lm
-DIST_DIR := dist/Screech
+DIST_DIR := dist
 .PHONY: run build package lint test
 .DEFAULT: package
 
 package: clean build
-	mkdir -p ${DIST_DIR}/assets && \
-	cp -r ./assets/*.bmp ${DIST_DIR}/assets/ && \
-	cp -r ./includes/* ${DIST_DIR}/ && \
-	cp ./bin/app ${DIST_DIR}/
-	zip -r ${DIST_DIR}/ScreechApp.zip ${DIST_DIR}/
+	@mkdir -p ${DIST_DIR}
+	zip -j -r ${DIST_DIR}/ScreechApp.zip assets/*.bmp includes/* bin/app
 
 build:
-	go build \
+	@go build \
+	-v \
 	-tags static \
 	-buildvcs=false \
 	-ldflags "-s -w -X ${DEV_ID} -X ${DEV_PASSWORD}" \
