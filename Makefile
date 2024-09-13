@@ -5,7 +5,7 @@ CFLAGS := $(shell pkg-config --cflags sdl2)
 LDLAGS := $(shell pkg-config --libs SDL2_image SDL2_ttf) -ldl -lpthread -lm
 DIST_DIR := ScreechApp
 BIN_DIR := bin
-.PHONY: run build package lint test
+.PHONY: run build package lint test build-macos
 .DEFAULT: package
 
 package: clean build
@@ -18,6 +18,18 @@ package: clean build
 
 build:
 	@go build \
+	-tags static \
+	-buildvcs=false \
+	-ldflags "-s -w -X ${DEV_ID} -X ${DEV_PASSWORD}" \
+	-o bin/app ./
+
+build-macos:
+	CGO_CFLAGS="${CFLAGS}" \
+	CGO_LDFLAGS="${LDLAGS}" \
+	GOARCH=arm64 \
+	GOOS=linux \
+	CC="aarch64-linux-gnu-gcc" \
+	go build \
 	-tags static \
 	-buildvcs=false \
 	-ldflags "-s -w -X ${DEV_ID} -X ${DEV_PASSWORD}" \
