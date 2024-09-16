@@ -59,6 +59,15 @@ func TestFindRoms(t *testing.T) {
 			maxDepth: 1,
 			expected: []string{"game1.rom"},
 		},
+		{
+			name: "Directory does not exists",
+			setup: func(t *testing.T) string {
+				return "/nonexistent"
+			},
+			maxDepth:  2,
+			expected:  []string{},
+			expectErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -88,7 +97,7 @@ func TestFindRoms(t *testing.T) {
 			if tt.expectErr {
 				select {
 				case event := <-events:
-					if !strings.Contains(event, "Error reading directory") {
+					if !strings.Contains(event, "Directory /nonexistent does not exist") {
 						t.Errorf("expected error event, got %s", event)
 					}
 				default:

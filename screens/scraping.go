@@ -158,38 +158,58 @@ func calculateDepth(rootDir, targetDir string) (int, error) {
 	return len(strings.Split(relativePath, string(filepath.Separator))), nil
 }
 
+func dirExists(path string) (bool, error) {
+	info, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return info.IsDir(), nil
+}
+
 func findRoms(ctx context.Context, events chan<- string, romDir string, maxDepth int) <-chan string {
 	roms := make(chan string, 15)
 
 	go func() {
 		defer close(roms)
-		err := filepath.WalkDir(romDir, func(path string, d fs.DirEntry, err error) error {
-			if err != nil {
-				events <- fmt.Sprintf("Error reading directory: %v", err)
-				return err
-			}
-
-			select {
-			case <-ctx.Done():
-				return ctx.Err()
-			default:
-				if d.IsDir() {
-					depth, err := calculateDepth(romDir, path)
-					if err != nil {
-						events <- fmt.Sprintf("Error getting relative path: %v", err)
-						return nil
-					}
-
-					if depth > maxDepth-1 || strings.HasPrefix(filepath.Base(path), ".") {
-						return filepath.SkipDir
-					}
-					events <- fmt.Sprintf("Scanning %s", findRelativePath(path, config.CurrentSystem))
-				} else {
-					roms <- filepath.Base(path)
+		if exists, err := dirExists(romDir); err != nil {
+			events <- fmt.Sprintf("Error checking directory: %v", err)
+			return
+		} else if !exists {
+			events <- fmt.Sprintf("Directory %s does not exist", romDir)
+			return
+		}
+		err := filepath.WalkDir(
+			romDir,
+			func(path string, d fs.DirEntry, err error) error {
+				if err != nil {
+					events <- fmt.Sprintf("Error reading directory: %v", err)
+					return err
 				}
-				return nil
-			}
-		})
+
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				default:
+					if d.IsDir() {
+						depth, err := calculateDepth(romDir, path)
+						if err != nil {
+							events <- fmt.Sprintf("Error getting relative path: %v", err)
+							return nil
+						}
+
+						if depth > maxDepth-1 || strings.HasPrefix(filepath.Base(path), ".") {
+							return filepath.SkipDir
+						}
+						events <- fmt.Sprintf("Scanning %s", findRelativePath(path, config.CurrentSystem))
+					} else {
+						roms <- filepath.Base(path)
+					}
+					return nil
+				}
+			})
 		if err != nil && err != context.Canceled {
 			events <- fmt.Sprintf("Error walking the path: %v", err)
 		}
