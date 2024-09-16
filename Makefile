@@ -1,11 +1,31 @@
 MODULE := github.com/anibaldeboni/screech
 DEV_ID := ${MODULE}/scraper.DevID=${SS_DEV_ID}
 DEV_PASSWORD := ${MODULE}/scraper.DevPassword=${SS_DEV_PASSWORD}
-CFLAGS := $(shell pkg-config --cflags sdl2)
-LDLAGS := $(shell pkg-config --libs SDL2_image SDL2_ttf) -ldl -lpthread -lm
 DIST_DIR := ScreechApp
 BIN_DIR := bin
-.PHONY: run build package lint test build-macos
+
+# Detect the operating system
+UNAME_S := $(shell uname -s)
+
+# Default values for CFLAGS and LDFLAGS
+CFLAGS := ""
+LDFLAGS := ""
+CC := ""
+
+# Set flags based on the operating system
+ifeq ($(UNAME_S), Darwin)
+    # MacOS specific flags
+    CFLAGS = $(shell pkg-config --cflags sdl2)
+    LDFLAGS = $(shell pkg-config --libs SDL2_image SDL2_ttf) -ldl -lpthread -lm
+		CC = "aarch64-linux-gnu-gcc"
+else ifeq ($(UNAME_S), Linux)
+    # Linux specific flags
+    CFLAGS = -I${SYSROOT}/usr/include -I/usr/aarch64-linux-gnu/include -I/usr/aarch64-linux-gnu/include/SDL2 -I/usr/include/SDL2 -D_REENTRANT
+    LDFLAGS = -L${SYSROOT}/usr/lib -L/usr/lib/aarch64-linux-gnu -lSDL2_image -lSDL2_ttf -lSDL2 -ldl -lpthread -lm
+		CC = "aarch64-linux-gnu-gcc --sysroot=${SYSROOT}"
+endif
+
+.PHONY: run build package lint test
 .DEFAULT: package
 
 package: clean build
@@ -17,21 +37,13 @@ package: clean build
 	zip -g -r ${DIST_DIR}/ScreechApp.zip ${DIST_DIR}
 
 build:
-	@go build \
-	-tags static \
-	-buildvcs=false \
-	-ldflags "-s -w -X ${DEV_ID} -X ${DEV_PASSWORD}" \
-	-o bin/app ./
-
-build-macos:
-	CGO_CFLAGS="${CFLAGS}" \
-	CGO_LDFLAGS="${LDLAGS}" \
+	@CGO_CFLAGS="${CFLAGS}" \
+	CGO_LDFLAGS="${LDFLAGS}" \
+	CC=${CC} \
 	GOARCH=arm64 \
 	GOOS=linux \
-	CC="aarch64-linux-gnu-gcc" \
 	go build \
 	-tags static \
-	-buildvcs=false \
 	-ldflags "-s -w -X ${DEV_ID} -X ${DEV_PASSWORD}" \
 	-o bin/app ./
 
