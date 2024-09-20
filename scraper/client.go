@@ -3,6 +3,7 @@ package scraper
 import (
 	"context"
 	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/anibaldeboni/screech/config"
@@ -97,7 +99,7 @@ func parseFindGameURL(systemID, romPath string) string {
 	q.Set("systemeid", systemID)
 	q.Set("romtype", "rom")
 	q.Set("romnom", cleanRomName(romPath)+".zip")
-	q.Set("romtaille", fmt.Sprintf("%d", fileSize(romPath)))
+	q.Set("romtaille", strconv.FormatInt(fileSize(romPath), 10))
 	u.RawQuery = q.Encode()
 	return u.String()
 }
@@ -128,8 +130,8 @@ func addWHToMediaURL(mediaURL string) (string, error) {
 		return "", fmt.Errorf("failed to parse media URL: %w", err)
 	}
 	q := u.Query()
-	q.Set("maxwidth", fmt.Sprintf("%d", config.Thumbnail.Width))
-	q.Set("maxheight", fmt.Sprintf("%d", config.Thumbnail.Height))
+	q.Set("maxwidth", strconv.Itoa(config.Thumbnail.Width))
+	q.Set("maxheight", strconv.Itoa(config.Thumbnail.Height))
 	u.RawQuery = q.Encode()
 
 	return u.String(), nil
@@ -214,7 +216,7 @@ func SHA1Sum(filePath string) string {
 		return ""
 	}
 
-	return fmt.Sprintf("%x", hash.Sum(nil))
+	return hex.EncodeToString(hash.Sum(nil))
 }
 
 func cleanRomName(file string) string {

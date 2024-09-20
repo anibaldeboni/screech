@@ -203,7 +203,7 @@ func findRoms(ctx context.Context, events chan<- string, romDir string, maxDepth
 						if depth > maxDepth-1 || strings.HasPrefix(filepath.Base(path), ".") {
 							return filepath.SkipDir
 						}
-						events <- fmt.Sprintf("Scanning %s", findRelativePath(path, config.CurrentSystem))
+						events <- "Scanning " + findRelativePath(path, config.CurrentSystem)
 					} else {
 						roms <- filepath.Base(path)
 					}
@@ -291,7 +291,7 @@ download:
 						break download
 					}
 				} else {
-					events <- fmt.Sprintf("Scrapped %s", romName)
+					events <- "Scrapped " + romName
 					count.success.Add(1)
 				}
 			}

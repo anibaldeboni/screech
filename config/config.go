@@ -130,8 +130,8 @@ type ScrapeMedia struct {
 }
 
 type thumbConfig struct {
-	Width  int32  `yaml:"width"`
-	Height int32  `yaml:"height"`
+	Width  int    `yaml:"width"`
+	Height int    `yaml:"height"`
 	Dir    string `yaml:"dir"`
 }
 type userConfigs struct {

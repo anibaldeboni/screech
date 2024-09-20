@@ -59,8 +59,8 @@ func DrawText(renderer *sdl.Renderer, text string, position sdl.Point, color sdl
 	destinationRect := sdl.Rect{
 		X: position.X,
 		Y: position.Y,
-		W: int32(textSurface.W),
-		H: int32(textSurface.H),
+		W: textSurface.W,
+		H: textSurface.H,
 	}
 
 	// Copy the texture to the renderer
@@ -131,8 +131,8 @@ func RenderTexture(renderer *sdl.Renderer, imagePath string, startQuadrant, endQ
 	srcRect := sdl.Rect{
 		X: 0,
 		Y: 0,
-		W: int32(textureWidth),
-		H: int32(textureHeight),
+		W: textureWidth,
+		H: textureHeight,
 	}
 
 	// Render the texture adjusted to the area between the quadrants

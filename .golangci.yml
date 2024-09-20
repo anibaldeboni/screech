@@ -1,6 +1,15 @@
 linters: #enable extra linters in addition to the default
   enable:
     - gofmt
+    - goimports
+    - misspell
+    - gosimple
+    - copyloopvar
+    - nilerr
+    - unconvert
+    - unparam
+    - prealloc
+    - perfsprint
 
 run:
   timeout: 5m
