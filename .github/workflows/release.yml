@@ -1,34 +1,27 @@
 # .github/workflows/release.yml
-name: Release
+name: Release pipeline
 
 on:
   release:
     types: [published]
-
+    
 permissions:
+  actions: read
   contents: write
+  id-token: write
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  tests:
+    uses: ./.github/workflows/tests.yml
+    secrets: inherit
+  lint:
+    uses: ./.github/workflows/lint.yml
+    secrets: inherit
   build-release:
-    name: Build artifacts
-    runs-on: ubuntu-latest
-    container:
-      image: anibaldeboni/trimui-smart-pro-toolchain:latest
-      env:
-        SS_DEV_ID: ${{ secrets.SS_DEV_ID }}
-        SS_DEV_PASSWORD: ${{ secrets.SS_DEV_PASSWORD }}
-    steps:
-        - name: Check out the repo
-          uses: actions/checkout@v2
-
-        - name: Build package
-          run: make
-
-        - name: Upload assets
-          uses: softprops/action-gh-release@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          if: ${{startsWith(github.ref, 'refs/tags/') }}
-          with:
-            files: ./ScreechApp/ScreechApp.zip
-        
+    uses: ./.github/workflows/build-release.yml
+    secrets: inherit
+    needs: [tests, lint]

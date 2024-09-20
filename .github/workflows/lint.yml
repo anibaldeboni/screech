@@ -1,4 +1,4 @@
-name: Lint
+name: Code quality
 
 on: workflow_call
 
@@ -6,7 +6,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  linters:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,8 +20,7 @@ jobs:
         run: sudo apt install libsdl2{,-image,-mixer,-ttf,-gfx}-dev
 
       - name: Run linters
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v6
         with:
-          version: latest
-          skip-pkg-cache: true
-          skip-build-cache: true
+          version: 1.61.0
+          skip-cache: true
