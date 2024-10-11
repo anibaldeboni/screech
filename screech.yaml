@@ -1,6 +1,20 @@
 roms: SDCARD/
 logos: assets/logos
 max-scan-depth: 2
+exclude-extensions:
+  - ".cue"
+  - ".m3u"
+  - ".jpg"
+  - ".png"
+  - ".sub"
+  - ".db"
+  - ".xml"
+  - ".txt"
+  - ".dat"
+  - ".miyoocmd"
+  - ".cfg"
+  - ".state"
+  - ".srm"
 screenscraper:
   username: my_username
   password: my_password

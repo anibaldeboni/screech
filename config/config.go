@@ -48,32 +48,53 @@ var (
 		Height: 580,
 		Dir:    "thumbnails",
 	}
-	Threads      = 1
-	MaxScanDepth = 2
+	Threads                  = 1
+	MaxScanDepth             = 2
+	ExcludeExtensions        []string
+	defaultExcludeExtensions = []string{
+		".cue",
+		".m3u",
+		".jpg",
+		".png",
+		".sub",
+		".db",
+		".xml",
+		".txt",
+		".dat",
+		".miyoocmd",
+		".cfg",
+		".state",
+		".srm",
+	}
 )
 
 func InitVars() {
-	config, err := readConfigFile()
+	cfg, err := readConfigFile()
 	if err != nil {
 		SaveCurrent()
 		return
 	}
-	Debug = config.Debug
+	Debug = cfg.Debug
 	CurrentScreen = "main_screen"
 	CurrentSystem = ""
 	CurrentGame = ""
 	ControlType = "keyboard"
-	Roms = config.Roms
-	Logos = config.Logos
-	MaxScanDepth = config.MaxScanDepth
-	Username = config.Screenscraper.Username
-	Password = config.Screenscraper.Password
-	Threads = config.Screenscraper.Threads
-	SystemsIDs = defineSystemsIDs(config.Screenscraper.Systems)
-	SystemsNames = defineSystemsNames(config.Screenscraper.Systems)
-	GameRegions = config.Screenscraper.Media.Regions
-	Media = config.Screenscraper.Media
-	Thumbnail = config.Thumbnail
+	Roms = cfg.Roms
+	Logos = cfg.Logos
+	MaxScanDepth = cfg.MaxScanDepth
+	if len(cfg.ExcludeExtensions) == 0 {
+		ExcludeExtensions = defaultExcludeExtensions
+	} else {
+		ExcludeExtensions = cfg.ExcludeExtensions
+	}
+	Username = cfg.Screenscraper.Username
+	Password = cfg.Screenscraper.Password
+	Threads = cfg.Screenscraper.Threads
+	SystemsIDs = defineSystemsIDs(cfg.Screenscraper.Systems)
+	SystemsNames = defineSystemsNames(cfg.Screenscraper.Systems)
+	GameRegions = cfg.Screenscraper.Media.Regions
+	Media = cfg.Screenscraper.Media
+	Thumbnail = cfg.Thumbnail
 	BodyFont = nil
 	HeaderFont = nil
 	ListFont = nil
@@ -85,6 +106,14 @@ func InitVars() {
 		SECONDARY: sdl.Color{R: 231, G: 192, B: 255, A: 255},
 		BLACK:     sdl.Color{R: 0, G: 0, B: 0, A: 255},
 	}
+}
+
+func getOrDefault[T comparable](value, def T) T {
+	var zero T
+	if value == zero {
+		return def
+	}
+	return value
 }
 
 func defineSystemsIDs(systems []scraperSystem) map[string]string {
@@ -111,9 +140,9 @@ func ScrapedImgDir() string {
 type scraperConfig struct {
 	Username string          `yaml:"username"`
 	Password string          `yaml:"password"`
-	Threads  int             `yaml:"threads"`
 	Media    ScrapeMedia     `yaml:"media"`
 	Systems  []scraperSystem `yaml:"systems"`
+	Threads  int             `yaml:"threads"`
 }
 
 type scraperSystem struct {
@@ -124,33 +153,35 @@ type scraperSystem struct {
 
 type ScrapeMedia struct {
 	Type    string   `yaml:"type"`
+	Regions []string `yaml:"regions"`
 	Width   int32    `yaml:"width"`
 	Height  int32    `yaml:"height"`
-	Regions []string `yaml:"regions"`
 }
 
 type thumbConfig struct {
+	Dir    string `yaml:"dir"`
 	Width  int    `yaml:"width"`
 	Height int    `yaml:"height"`
-	Dir    string `yaml:"dir"`
 }
 type userConfigs struct {
-	Roms          string        `yaml:"roms"`
-	Logos         string        `yaml:"logos"`
-	MaxScanDepth  int           `yaml:"max-scan-depth"`
-	Screenscraper scraperConfig `yaml:"screenscraper"`
-	Thumbnail     thumbConfig   `yaml:"thumbnail"`
-	Debug         bool          `yaml:"debug,omitempty"`
+	Thumbnail         thumbConfig   `yaml:"thumbnail"`
+	Roms              string        `yaml:"roms"`
+	Logos             string        `yaml:"logos"`
+	Screenscraper     scraperConfig `yaml:"screenscraper"`
+	MaxScanDepth      int           `yaml:"max-scan-depth"`
+	ExcludeExtensions []string      `yaml:"exclude-extensions"`
+	Debug             bool          `yaml:"debug,omitempty"`
 }
 
 func readConfigFile() (*userConfigs, error) {
-	var config *userConfigs
+	var cfg *userConfigs
 	file, err := os.ReadFile(configFile)
+
 	if err != nil {
 		return nil, err
 	}
-	err = yaml.Unmarshal(file, &config)
-	return config, err
+	err = yaml.Unmarshal(file, &cfg)
+	return cfg, err
 }
 
 func SaveCurrent() {

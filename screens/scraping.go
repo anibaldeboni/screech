@@ -38,11 +38,11 @@ type counter struct {
 type DirWalker func(string, fs.WalkDirFunc) error
 
 type ScrapingScreen struct {
+	ctx         context.Context
 	renderer    *sdl.Renderer
 	textView    *components.TextView
-	initialized bool
-	ctx         context.Context
 	cancel      context.CancelFunc
+	initialized bool
 }
 
 func NewScrapingScreen(renderer *sdl.Renderer) (*ScrapingScreen, error) {
@@ -102,17 +102,8 @@ func (s *ScrapingScreen) Draw() {
 	s.scrape()
 }
 
-func isValidRom(rom string) bool {
-	switch filepath.Ext(rom) {
-	case ".cue", ".m3u", ".jpg", ".png", ".img", ".sub", ".db", ".xml", ".txt", ".dat":
-		return false
-	default:
-		return true
-	}
-}
-
 func isInvalidRom(rom string) bool {
-	return !isValidRom(rom)
+	return slices.Contains(config.ExcludeExtensions, filepath.Ext(rom))
 }
 
 func (s *ScrapingScreen) scrape() {

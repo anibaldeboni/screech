@@ -1,6 +1,20 @@
 roms: /mnt/SDCARD/Roms/ # Path to the roms folder
 logos: /mnt/SDCARD/Icons/Default/Logos # Path to the console logos folder, should contain PNG files
 max-scan-depth: 2 # Maximum number of subdirectories to scan for roms
+exclude-extensions: # List of file extensions to exclude from the scan
+  - ".cue"
+  - ".m3u"
+  - ".jpg"
+  - ".png"
+  - ".sub"
+  - ".db"
+  - ".xml"
+  - ".txt"
+  - ".dat"
+  - ".miyoocmd"
+  - ".cfg"
+  - ".state"
+  - ".srm"
 screenscraper:
   username: my_username
   password: my_password
