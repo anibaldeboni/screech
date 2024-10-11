@@ -16,10 +16,10 @@ type Item struct {
 
 type List struct {
 	renderer        *sdl.Renderer
+	itemFormatter   func(index int, item Item) string
 	items           []Item
 	selectedIndex   int
 	scrollOffset    int
-	itemFormatter   func(index int, item Item) string
 	maxVisibleItems int
 	position        sdl.Point
 }

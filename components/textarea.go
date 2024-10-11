@@ -12,11 +12,11 @@ import (
 
 type TextArea struct {
 	renderer        *sdl.Renderer
+	font            *ttf.Font
 	text            string
 	lines           []string
 	scrollOffset    int
 	maxVisibleLines int
-	font            *ttf.Font
 	maxWidth        int
 }
 

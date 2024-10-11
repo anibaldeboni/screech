@@ -48,14 +48,28 @@ type GameInfoResponse struct {
 			Favregion           string `json:"favregion"`
 		} `json:"ssuser"`
 		Jeu struct {
-			ID      string `json:"id"`
-			Romid   string `json:"romid"`
-			Notgame string `json:"notgame"`
-			Noms    []struct {
-				Region string `json:"region"`
-				Text   string `json:"text"`
-			} `json:"noms"`
-			Cloneof string `json:"cloneof"`
+			Rom struct {
+				ID              string `json:"id"`
+				Romnumsupport   string `json:"romnumsupport"`
+				Romtotalsupport string `json:"romtotalsupport"`
+				Romfilename     string `json:"romfilename"`
+				Romtype         string `json:"romtype"`
+				Romsupporttype  string `json:"romsupporttype"`
+				Romsize         string `json:"romsize"`
+				Romcrc          string `json:"romcrc"`
+				Rommd5          string `json:"rommd5"`
+				Romsha1         string `json:"romsha1"`
+				Romcloneof      string `json:"romcloneof"`
+				Beta            string `json:"beta"`
+				Demo            string `json:"demo"`
+				Proto           string `json:"proto"`
+				Trad            string `json:"trad"`
+				Hack            string `json:"hack"`
+				Unl             string `json:"unl"`
+				Alt             string `json:"alt"`
+				Best            string `json:"best"`
+				Netplay         string `json:"netplay"`
+			} `json:"rom"`
 			Systeme struct {
 				ID   string `json:"id"`
 				Text string `json:"text"`
@@ -68,6 +82,10 @@ type GameInfoResponse struct {
 				ID   string `json:"id"`
 				Text string `json:"text"`
 			} `json:"developpeur"`
+			ID      string `json:"id"`
+			Romid   string `json:"romid"`
+			Notgame string `json:"notgame"`
+			Cloneof string `json:"cloneof"`
 			Joueurs struct {
 				Text string `json:"text"`
 			} `json:"joueurs"`
@@ -76,6 +94,10 @@ type GameInfoResponse struct {
 			} `json:"note"`
 			Topstaff string `json:"topstaff"`
 			Rotation string `json:"rotation"`
+			Noms     []struct {
+				Region string `json:"region"`
+				Text   string `json:"text"`
+			} `json:"noms"`
 			Synopsis []struct {
 				Langue string `json:"langue"`
 				Text   string `json:"text"`
@@ -164,28 +186,6 @@ type GameInfoResponse struct {
 					LanguesPt        []string `json:"langues_pt"`
 				} `json:"langues,omitempty"`
 			} `json:"roms"`
-			Rom struct {
-				ID              string `json:"id"`
-				Romnumsupport   string `json:"romnumsupport"`
-				Romtotalsupport string `json:"romtotalsupport"`
-				Romfilename     string `json:"romfilename"`
-				Romtype         string `json:"romtype"`
-				Romsupporttype  string `json:"romsupporttype"`
-				Romsize         string `json:"romsize"`
-				Romcrc          string `json:"romcrc"`
-				Rommd5          string `json:"rommd5"`
-				Romsha1         string `json:"romsha1"`
-				Romcloneof      string `json:"romcloneof"`
-				Beta            string `json:"beta"`
-				Demo            string `json:"demo"`
-				Proto           string `json:"proto"`
-				Trad            string `json:"trad"`
-				Hack            string `json:"hack"`
-				Unl             string `json:"unl"`
-				Alt             string `json:"alt"`
-				Best            string `json:"best"`
-				Netplay         string `json:"netplay"`
-			} `json:"rom"`
 		} `json:"jeu"`
 	} `json:"response"`
 }
