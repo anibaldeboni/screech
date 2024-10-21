@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/anibaldeboni/screech/config"
 	"github.com/anibaldeboni/screech/scraper"
 )
 
@@ -340,6 +341,8 @@ func TestBuildWorkerPool(t *testing.T) {
 			findGame = tt.findGameFunc
 			downloadMedia = tt.downloadMediaFunc
 			hasScrapedImage = tt.hasScrapedImageFunc
+
+			config.ExcludeExtensions = []string{".txt"}
 
 			go buildWorkerPool(ctx, cancel, 2, roms, events)
 
