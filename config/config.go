@@ -108,14 +108,6 @@ func InitVars() {
 	}
 }
 
-func getOrDefault[T comparable](value, def T) T {
-	var zero T
-	if value == zero {
-		return def
-	}
-	return value
-}
-
 func defineSystemsIDs(systems []scraperSystem) map[string]string {
 	systemsIDs := make(map[string]string, len(systems))
 	for _, system := range systems {
