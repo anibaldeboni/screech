@@ -211,6 +211,8 @@ func TestWorker(t *testing.T) {
 			downloadMedia = tt.downloadMediaFunc
 			hasScrapedImage = tt.hasScrapedImageFunc
 
+			config.ExcludeExtensions = []string{".txt"}
+
 			go worker(ctx, &wg, roms, events, &count)
 
 			wg.Wait()
