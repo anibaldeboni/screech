@@ -49,7 +49,7 @@ func FindGame(ctx context.Context, systemID string, romPath string) (GameInfoRes
 	}
 
 	if err := json.Unmarshal(res, &result); err != nil {
-		return result, UnreadableBodyErr
+		return result, fmt.Errorf("failed to unmarshal JSON: %w response: %s", err, string(res))
 	}
 
 	return result, nil
@@ -91,7 +91,7 @@ func parseFindGameURL(systemID, romPath string) string {
 	q := u.Query()
 	q.Set("devid", DevID)
 	q.Set("devpassword", DevPassword)
-	q.Set("softname", "crossmix")
+	q.Set("softname", "screech")
 	q.Set("output", "json")
 	q.Set("ssid", config.Username)
 	q.Set("sspassword", config.Password)
@@ -172,7 +172,7 @@ func get(ctx context.Context, url string) ([]byte, error) {
 
 	body, err := io.ReadAll(res.Body)
 	if err != nil {
-		return nil, UnreadableBodyErr
+		return nil, errors.Join(UnreadableBodyErr, fmt.Errorf("error: %w", err))
 	}
 
 	s := string(body)
@@ -180,7 +180,7 @@ func get(ctx context.Context, url string) ([]byte, error) {
 	case strings.Contains(s, "API closed"):
 		return nil, APIClosedErr
 	case strings.Contains(s, "Erreur"):
-		return nil, GameNotFoundErr
+		return nil, errors.Join(GameNotFoundErr, fmt.Errorf(": %s", s))
 	case s == "":
 		return nil, EmptyBodyErr
 	}
