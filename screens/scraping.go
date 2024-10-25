@@ -55,7 +55,11 @@ func (s *ScrapingScreen) InitScraping() {
 	if s.initialized {
 		return
 	}
-	s.textView = components.NewTextView(s.renderer, 18, sdl.Point{X: 45, Y: 95})
+	s.textView = components.NewTextView(
+		s.renderer,
+		components.TextViewSize{Width: 100, Height: 18},
+		sdl.Point{X: 45, Y: 95},
+	)
 	s.initialized = true
 }
 

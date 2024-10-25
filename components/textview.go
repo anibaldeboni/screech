@@ -1,6 +1,8 @@
 package components
 
 import (
+	"strings"
+
 	"github.com/anibaldeboni/screech/config"
 	"github.com/anibaldeboni/screech/output"
 	"github.com/anibaldeboni/screech/uilib"
@@ -8,20 +10,41 @@ import (
 )
 
 type TextView struct {
-	renderer        *sdl.Renderer
-	lines           []string
-	YOffset         int
-	maxVisibleLines int
-	position        sdl.Point
+	renderer *sdl.Renderer
+	lines    []string
+	YOffset  int
+	size     TextViewSize
+	position sdl.Point
 }
 
-func NewTextView(renderer *sdl.Renderer, maxVisibleItems int, position sdl.Point) *TextView {
+type TextViewSize struct {
+	Width  int
+	Height int
+}
+
+func NewTextView(renderer *sdl.Renderer, size TextViewSize, position sdl.Point) *TextView {
 	return &TextView{
-		renderer:        renderer,
-		maxVisibleLines: maxVisibleItems,
-		lines:           []string{},
-		position:        position,
+		renderer: renderer,
+		size:     size,
+		lines:    []string{},
+		position: position,
 	}
+}
+
+func (t *TextView) parseLines(text []string) []string {
+	var output []string
+	for _, line := range text {
+		for len(line) > t.size.Width {
+			cut := t.size.Width
+			if space := strings.LastIndex(line[:cut], " "); space != -1 {
+				cut = space
+			}
+			output = append(output, line[:cut])
+			line = strings.TrimSpace(line[cut:])
+		}
+		output = append(output, line)
+	}
+	return output
 }
 
 func (t *TextView) SetContent(text []string) {
@@ -32,13 +55,13 @@ func (t *TextView) SetContent(text []string) {
 }
 
 func (t *TextView) AddText(text string) {
-	t.lines = append(t.lines, text)
+	t.lines = append(t.lines, t.parseLines([]string{text})...)
 	t.SetYOffset(t.maxYOffset())
 	t.GoToBottom()
 }
 
 func (t TextView) maxYOffset() int {
-	return max(0, len(t.lines)-t.maxVisibleLines)
+	return max(0, len(t.lines)-t.size.Height)
 }
 
 func (t *TextView) SetYOffset(n int) {
@@ -76,7 +99,7 @@ func (t *TextView) GoToBottom() {
 func (t TextView) visibleLines() (lines []string) {
 	if len(t.lines) > 0 {
 		top := max(0, t.YOffset)
-		bottom := clamp(t.YOffset+t.maxVisibleLines, top, len(t.lines))
+		bottom := clamp(t.YOffset+t.size.Height, top, len(t.lines))
 		lines = t.lines[top:bottom]
 	}
 	return lines
