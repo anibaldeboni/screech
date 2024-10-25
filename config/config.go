@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -24,13 +25,11 @@ var (
 	ScreenHeight       = int32(720)
 	CurrentScreen      string
 	CurrentSystem      string
-	CurrentGame        string
 	BodyFont           *ttf.Font
 	HeaderFont         *ttf.Font
 	ListFont           *ttf.Font
 	LongTextFont       *ttf.Font
 	Colors             FontColors
-	ControlType        string
 	Roms               string
 	Logos              string
 	UiControls         = "assets/ui_controls_1280_720.bmp"
@@ -77,8 +76,6 @@ func InitVars() {
 	Debug = cfg.Debug
 	CurrentScreen = "main_screen"
 	CurrentSystem = ""
-	CurrentGame = ""
-	ControlType = "keyboard"
 	Roms = cfg.Roms
 	Logos = cfg.Logos
 	MaxScanDepth = cfg.MaxScanDepth
@@ -90,8 +87,8 @@ func InitVars() {
 	Username = cfg.Screenscraper.Username
 	Password = cfg.Screenscraper.Password
 	Threads = cfg.Screenscraper.Threads
-	SystemsIDs = defineSystemsIDs(cfg.Screenscraper.Systems)
-	SystemsNames = defineSystemsNames(cfg.Screenscraper.Systems)
+	SystemsIDs = defineSystemsIDs(cfg.Systems)
+	SystemsNames = defineSystemsNames(cfg.Systems)
 	GameRegions = cfg.Screenscraper.Media.Regions
 	Media = cfg.Screenscraper.Media
 	Thumbnail = cfg.Thumbnail
@@ -109,14 +106,24 @@ func InitVars() {
 }
 
 func defineSystemsIDs(systems []scraperSystem) map[string]string {
-	systemsIDs := make(map[string]string, len(systems))
+	if len(systems) == 0 {
+		fmt.Println("Input systems slice is empty")
+		return nil
+	}
+
+	systemsIDs := make(map[string]string)
 	for _, system := range systems {
+		if system.Dir == "" {
+			fmt.Printf("Skipping system with empty Dir: %+v\n", system)
+			continue
+		}
 		systemsIDs[system.Dir] = system.ID
 	}
 	return systemsIDs
 }
+
 func defineSystemsNames(systems []scraperSystem) map[string]string {
-	systemsNames := make(map[string]string, len(systems))
+	systemsNames := make(map[string]string)
 	for _, system := range systems {
 		systemsNames[system.Dir] = system.Name
 	}
@@ -130,11 +137,10 @@ func ScrapedImgDir() string {
 }
 
 type scraperConfig struct {
-	Username string          `yaml:"username"`
-	Password string          `yaml:"password"`
-	Media    ScrapeMedia     `yaml:"media"`
-	Systems  []scraperSystem `yaml:"systems"`
-	Threads  int             `yaml:"threads"`
+	Username string      `yaml:"username"`
+	Password string      `yaml:"password"`
+	Media    ScrapeMedia `yaml:"media"`
+	Threads  int         `yaml:"threads"`
 }
 
 type scraperSystem struct {
@@ -156,13 +162,14 @@ type thumbConfig struct {
 	Height int    `yaml:"height"`
 }
 type userConfigs struct {
-	Thumbnail         thumbConfig   `yaml:"thumbnail"`
-	Roms              string        `yaml:"roms"`
-	Logos             string        `yaml:"logos"`
-	Screenscraper     scraperConfig `yaml:"screenscraper"`
-	MaxScanDepth      int           `yaml:"max-scan-depth"`
-	ExcludeExtensions []string      `yaml:"exclude-extensions"`
-	Debug             bool          `yaml:"debug,omitempty"`
+	Thumbnail         thumbConfig     `yaml:"thumbnail"`
+	Roms              string          `yaml:"roms"`
+	Logos             string          `yaml:"logos"`
+	Screenscraper     scraperConfig   `yaml:"screenscraper"`
+	Systems           []scraperSystem `yaml:"systems"`
+	MaxScanDepth      int             `yaml:"max-scan-depth"`
+	ExcludeExtensions []string        `yaml:"exclude-extensions"`
+	Debug             bool            `yaml:"debug,omitempty"`
 }
 
 func readConfigFile() (*userConfigs, error) {

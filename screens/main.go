@@ -45,12 +45,17 @@ func (m *MainScreen) InitMain() {
 
 func romDirsToList(romDirs []RomDir) []components.Item {
 	items := make([]components.Item, len(romDirs))
-	for _, romDir := range romDirs {
-		items = append(items, components.Item{
-			Text:  romDir.Name,
+
+	for i, romDir := range romDirs {
+		itemText := config.SystemsNames[romDir.Name]
+		if itemText == "" {
+			itemText = romDir.Name
+		}
+		items[i] = components.Item{
+			Text:  itemText,
 			ID:    romDir.Name,
 			Value: romDir.Path,
-		})
+		}
 	}
 	return items
 }

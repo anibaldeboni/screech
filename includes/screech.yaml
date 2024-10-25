@@ -90,7 +90,7 @@ systems:
     name: Daphne
   - dir: DC
     id: "23"
-    name: dreamcast
+    name: Dreamcast
   - dir: DOS
     id: "135"
     name: DOS
@@ -113,8 +113,8 @@ systems:
     id: "75"
     name: FBAlpha
   - dir: FBNEO
-    id: ""
-    name: FBNeo (Empty)
+    id: "75"
+    name: FBNeo
   - dir: FC
     id: "3"
     name: NES (Famicom)
@@ -241,9 +241,6 @@ systems:
   - dir: POKEMINI
     id: "211"
     name: PokeMini
-  - dir: PORTS
-    id: "137"
-    name: PC Win9X
   - dir: PS
     id: "57"
     name: Sony Playstation
@@ -255,13 +252,7 @@ systems:
     name: Sony PSP Minis
   - dir: SATURN
     id: "22"
-    name: Sony PSP Minis
-  - dir: SATELLAVIEW
-    id: "107"
-    name: Satellaview
-  - dir: SCUMMVM
-    id: "123"
-    name: ScummVM
+    name: Sega Saturn
   - dir: SEGACD
     id: "20"
     name: Sega CD
@@ -276,13 +267,13 @@ systems:
     name: Super Nintendo (SNES)
   - dir: SFCMSU
     id: "4"
-    name: Super Nintendo (SNES) hacks
+    name: SNES hacks
   - dir: SGB
     id: "127"
     name: Super Game Boy
   - dir: SFX
     id: "105"
-    name: NEC PC Engine SuperGrafx
+    name: PC Engine SuperGrafx
   - dir: SUFAMI
     id: "108"
     name: Sufami Turbo
@@ -321,10 +312,10 @@ systems:
     name: Videopac
   - dir: VMU
     id: "23"
-    name: Dreamcast VMU (useless)
+    name: Dreamcast VMU
   - dir: WS
     id: "45"
-    name: Bandai WonderSwan & Color
+    name: Bandai WonderSwan
   - dir: X68000
     id: "79"
     name: Sharp X68000
@@ -351,22 +342,22 @@ systems:
     name: Sega Naomi
   - dir: NDS
     id: "15"
-    name: NDS
+    name: Nintendo DS
   - dir: NEOCD
     id: "70"
-    name: Neo Geo CD
+    name: NeoGeo CD
   - dir: NEOGEO
     id: "142"
-    name: Neo Geo AES
+    name: NeoGeo AES
   - dir: NGP
     id: "25"
-    name: Neo Geo Pocket
+    name: NeoGeo Pocket
   - dir: NGC
     id: "82"
-    name: Neo-geo Pocket Color
+    name: NeoGeo Pocket Color
   - dir: ODYSSEY
     id: "104"
-    name: Videopac / Magnavox Odyssey 2
+    name: Odyssey
   - dir: OPENBOR
     id: "214"
     name: OpenBOR
@@ -378,19 +369,19 @@ systems:
     name: 3DO
   - dir: PCE
     id: "31"
-    name: NEC TurboGrafx-16 / PC Engine
+    name: TurboGrafx-16/PC Engine
   - dir: PCECD
     id: "114"
-    name: NEC TurboGrafx-CD
+    name: TurboGrafx-CD
   - dir: PC88
     id: "221"
-    name: NEC PC-8000 & PC-8800 series / NEC PC-8801
+    name: PC-8000/8800/8801
   - dir: PCFX
     id: "72"
-    name: NEC PC-FX
+    name: PC-FX
   - dir: PC98
     id: "208"
-    name: NEC PC-98 / NEC PC-9801
+    name: PC-98/9801
   - dir: PICO
     id: "234"
     name: PICO
@@ -399,7 +390,7 @@ systems:
     name: PokeMini
   - dir: PORTS
     id: "137"
-    name: PC Win9X
+    name: PC Ports
   - dir: PS
     id: "57"
     name: Sony Playstation
@@ -408,9 +399,6 @@ systems:
     name: Sony PSP
   - dir: PSPMINIS
     id: "172"
-    name: Sony PSP Minis
-  - dir: SATURN
-    id: "22"
     name: Sony PSP Minis
   - dir: SATELLAVIEW
     id: "107"

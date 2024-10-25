@@ -93,7 +93,7 @@ func (s *ScrapingScreen) Draw() {
 	uilib.RenderTexture(s.renderer, config.UiOverlay, "Q2", "Q4")
 	uilib.DrawText(
 		s.renderer,
-		"Scraping "+config.CurrentSystem,
+		"Scraping "+config.SystemsNames[config.CurrentSystem],
 		sdl.Point{X: 25, Y: 25},
 		config.Colors.PRIMARY, config.HeaderFont,
 	)
