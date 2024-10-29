@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"flag"
 	"log"
 	"os"
 	"runtime/debug"
@@ -29,6 +30,9 @@ func main() {
 			os.Exit(-1)
 		}
 	}()
+
+	flag.StringVar(&config.ConfigFile, "config", "screech.yaml", "Path to the configuration file")
+	flag.Parse()
 
 	config.InitVars()
 

@@ -51,7 +51,7 @@ clean:
 	@rm -rf ${BIN_DIR}/* ${DIST_DIR}/*
 
 run:
-	@go run -ldflags "-X ${DEV_ID} -X ${DEV_PASSWORD}" main.go
+	@go run -ldflags "-X ${DEV_ID} -X ${DEV_PASSWORD}" main.go --config=./includes/screech.yaml
 
 lint: ##@dev Run lint (download from https://golangci-lint.run/usage/install/#local-installation)
 	@golangci-lint run -v

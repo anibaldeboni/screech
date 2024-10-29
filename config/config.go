@@ -19,7 +19,7 @@ type FontColors struct {
 }
 
 var (
-	configFile         = "screech.yaml"
+	ConfigFile         = "screech.yaml"
 	Debug              bool
 	ScreenWidth        = int32(1280)
 	ScreenHeight       = int32(720)
@@ -174,7 +174,7 @@ type userConfigs struct {
 
 func readConfigFile() (*userConfigs, error) {
 	var cfg *userConfigs
-	file, err := os.ReadFile(configFile)
+	file, err := os.ReadFile(ConfigFile)
 
 	if err != nil {
 		return nil, err
@@ -199,7 +199,7 @@ func SaveCurrent() {
 	if err != nil {
 		panic(err)
 	}
-	if err := os.WriteFile(configFile, data, 0644); err != nil {
+	if err := os.WriteFile(ConfigFile, data, 0644); err != nil {
 		panic(err)
 	}
 }
