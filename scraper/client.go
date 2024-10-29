@@ -130,8 +130,8 @@ func addWHToMediaURL(mediaURL string) (string, error) {
 		return "", fmt.Errorf("failed to parse media URL: %w", err)
 	}
 	q := u.Query()
-	q.Set("maxwidth", strconv.Itoa(config.Thumbnail.Width))
-	q.Set("maxheight", strconv.Itoa(config.Thumbnail.Height))
+	q.Set("maxwidth", strconv.Itoa(config.Boxart.Width))
+	q.Set("maxheight", strconv.Itoa(config.Boxart.Height))
 	u.RawQuery = q.Encode()
 
 	return u.String(), nil

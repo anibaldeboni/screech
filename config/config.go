@@ -18,6 +18,19 @@ type FontColors struct {
 	BLACK     sdl.Color
 }
 
+type SystemSettings struct {
+	ID        string `yaml:"id"`
+	Name      string `yaml:"name"`
+	OutputDir string `yaml:"output-dir,omitempty"`
+}
+
+type ScrapeMedia struct {
+	Type    string   `yaml:"type"`
+	Regions []string `yaml:"regions"`
+	Width   int32    `yaml:"width"`
+	Height  int32    `yaml:"height"`
+}
+
 var (
 	ConfigFile         = "screech.yaml"
 	Debug              bool
@@ -38,11 +51,10 @@ var (
 	UiOverlaySelection = "assets/bg_overlay_selection.bmp"
 	Username           string
 	Password           string
-	SystemsIDs         map[string]string
-	SystemsNames       map[string]string
+	Systems            map[string]SystemSettings
 	GameRegions        []string
 	Media              ScrapeMedia
-	Thumbnail          = thumbConfig{
+	Boxart             = boxartConfig{
 		Width:  400,
 		Height: 580,
 		Dir:    "thumbnails",
@@ -87,11 +99,10 @@ func InitVars() {
 	Username = cfg.Screenscraper.Username
 	Password = cfg.Screenscraper.Password
 	Threads = cfg.Screenscraper.Threads
-	SystemsIDs = defineSystemsIDs(cfg.Systems)
-	SystemsNames = defineSystemsNames(cfg.Systems)
+	Systems = setSystems(cfg.Systems)
 	GameRegions = cfg.Screenscraper.Media.Regions
 	Media = cfg.Screenscraper.Media
-	Thumbnail = cfg.Thumbnail
+	Boxart = cfg.Boxart
 	BodyFont = nil
 	HeaderFont = nil
 	ListFont = nil
@@ -105,34 +116,35 @@ func InitVars() {
 	}
 }
 
-func defineSystemsIDs(systems []scraperSystem) map[string]string {
-	if len(systems) == 0 {
-		fmt.Println("Input systems slice is empty")
-		return nil
-	}
-
-	systemsIDs := make(map[string]string)
+func setSystems(systems []scraperSystem) map[string]SystemSettings {
+	systemSettings := make(map[string]SystemSettings)
 	for _, system := range systems {
 		if system.Dir == "" {
 			fmt.Printf("Skipping system with empty Dir: %+v\n", system)
 			continue
 		}
-		systemsIDs[system.Dir] = system.ID
+
+		var outputDir string
+		if system.OutputDir != "" {
+			outputDir = system.OutputDir
+		} else {
+			outputDir = system.Dir
+		}
+
+		systemSettings[system.Dir] = SystemSettings{
+			ID:        system.ID,
+			Name:      system.Name,
+			OutputDir: outputDir,
+		}
 	}
-	return systemsIDs
+
+	return systemSettings
 }
 
-func defineSystemsNames(systems []scraperSystem) map[string]string {
-	systemsNames := make(map[string]string)
-	for _, system := range systems {
-		systemsNames[system.Dir] = system.Name
-	}
-	return systemsNames
-}
 func ScrapedImgDir() string {
-	dir := strings.ReplaceAll(Thumbnail.Dir, "/", string(filepath.Separator))
+	dir := strings.ReplaceAll(Boxart.Dir, "/", string(filepath.Separator))
 	dir = strings.ReplaceAll(dir, "\\", string(filepath.Separator))
-	dir = strings.ReplaceAll(dir, "%SYSTEM%", CurrentSystem)
+	dir = strings.ReplaceAll(dir, "%SYSTEM%", Systems[CurrentSystem].OutputDir)
 	return dir
 }
 
@@ -144,25 +156,19 @@ type scraperConfig struct {
 }
 
 type scraperSystem struct {
-	ID   string `yaml:"id"`
-	Name string `yaml:"name"`
-	Dir  string `yaml:"dir"`
+	ID        string `yaml:"id"`
+	Name      string `yaml:"name"`
+	OutputDir string `yaml:"output-dir,omitempty"`
+	Dir       string `yaml:"dir"`
 }
 
-type ScrapeMedia struct {
-	Type    string   `yaml:"type"`
-	Regions []string `yaml:"regions"`
-	Width   int32    `yaml:"width"`
-	Height  int32    `yaml:"height"`
-}
-
-type thumbConfig struct {
+type boxartConfig struct {
 	Dir    string `yaml:"dir"`
 	Width  int    `yaml:"width"`
 	Height int    `yaml:"height"`
 }
 type userConfigs struct {
-	Thumbnail         thumbConfig     `yaml:"thumbnail"`
+	Boxart            boxartConfig    `yaml:"thumbnail"`
 	Roms              string          `yaml:"roms"`
 	Logos             string          `yaml:"logos"`
 	Screenscraper     scraperConfig   `yaml:"screenscraper"`
@@ -191,8 +197,8 @@ func SaveCurrent() {
 			Password: Password,
 			Media:    Media,
 		},
-		Thumbnail: Thumbnail,
-		Debug:     Debug,
+		Boxart: Boxart,
+		Debug:  Debug,
 	}
 
 	data, err := yaml.Marshal(&config)

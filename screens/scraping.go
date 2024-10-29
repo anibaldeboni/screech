@@ -34,9 +34,6 @@ var (
 type counter struct {
 	success, failed, skipped *atomic.Uint32
 }
-
-type DirWalker func(string, fs.WalkDirFunc) error
-
 type ScrapingScreen struct {
 	ctx         context.Context
 	renderer    *sdl.Renderer
@@ -93,7 +90,7 @@ func (s *ScrapingScreen) Draw() {
 	uilib.RenderTexture(s.renderer, config.UiOverlay, "Q2", "Q4")
 	uilib.DrawText(
 		s.renderer,
-		"Scraping "+config.SystemsNames[config.CurrentSystem],
+		"Scraping "+config.Systems[config.CurrentSystem].Name,
 		sdl.Point{X: 25, Y: 25},
 		config.Colors.PRIMARY, config.HeaderFont,
 	)
@@ -271,7 +268,7 @@ download:
 				continue
 			}
 
-			if res, err := findGame(ctx, config.SystemsIDs[config.CurrentSystem], rom); err != nil {
+			if res, err := findGame(ctx, config.Systems[config.CurrentSystem].ID, rom); err != nil {
 				if errors.Is(err, scraper.HTTPRequestAbortedErr) {
 					break download
 				}

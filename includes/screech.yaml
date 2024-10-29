@@ -31,9 +31,10 @@ screenscraper:
       - eu
       - jp
 systems:
-  - dir: ADVMAME
-    id: "75"
-    name: Mame
+  - dir: ADVMAME # Name of the system folder in the roms directory
+    id: "75" # ID of the system on screenscraper
+    name: Mame # Display name of the system in Screech
+    # output-dir: MAME box-arts # Optional custom output directory to be used as the value of %SYSTEM% in thumbnail.dir
   - dir: AMIGA
     id: "64"
     name: Commodore Amiga
@@ -424,4 +425,4 @@ systems:
 thumbnail:
   width: 400
   height: 580
-  dir: /mnt/SDCARD/Imgs/%SYSTEM%/
+  dir: /mnt/SDCARD/Imgs/%SYSTEM%/ # You may set a custom %SYSTEM% value under systems[].output-dir. If none is set, the value of systems[].dir is used

@@ -45,9 +45,8 @@ func (m *MainScreen) InitMain() {
 
 func romDirsToList(romDirs []RomDir) []components.Item {
 	items := make([]components.Item, len(romDirs))
-
 	for i, romDir := range romDirs {
-		itemText := config.SystemsNames[romDir.Name]
+		itemText := config.Systems[romDir.Name].Name
 		if itemText == "" {
 			itemText = romDir.Name
 		}
