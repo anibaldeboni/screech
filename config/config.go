@@ -25,10 +25,11 @@ type SystemSettings struct {
 }
 
 type ScrapeMedia struct {
-	Type    string   `yaml:"type"`
-	Regions []string `yaml:"regions"`
-	Width   int32    `yaml:"width"`
-	Height  int32    `yaml:"height"`
+	Type                string   `yaml:"type"`
+	Regions             []string `yaml:"regions"`
+	Width               int32    `yaml:"width"`
+	Height              int32    `yaml:"height"`
+	IgnoreMissingRegion bool     `yaml:"ignore-missing-region"`
 }
 
 var (
@@ -52,7 +53,6 @@ var (
 	Username           string
 	Password           string
 	Systems            map[string]SystemSettings
-	GameRegions        []string
 	Media              ScrapeMedia
 	Boxart             = boxartConfig{
 		Width:  400,
@@ -100,7 +100,6 @@ func InitVars() {
 	Password = cfg.Screenscraper.Password
 	Threads = cfg.Screenscraper.Threads
 	Systems = setSystems(cfg.Systems)
-	GameRegions = cfg.Screenscraper.Media.Regions
 	Media = cfg.Screenscraper.Media
 	Boxart = cfg.Boxart
 	BodyFont = nil
