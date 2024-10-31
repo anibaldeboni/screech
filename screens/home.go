@@ -13,14 +13,14 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-type MainScreen struct {
+type HomeScreen struct {
 	renderer      *sdl.Renderer
 	listComponent *components.List
 	initialized   bool
 }
 
-func NewMainScreen(renderer *sdl.Renderer) (*MainScreen, error) {
-	return &MainScreen{
+func NewHomeScreen(renderer *sdl.Renderer) (*HomeScreen, error) {
+	return &HomeScreen{
 		renderer: renderer,
 		listComponent: components.NewList(
 			renderer,
@@ -33,11 +33,11 @@ func NewMainScreen(renderer *sdl.Renderer) (*MainScreen, error) {
 	}, nil
 }
 
-func (m *MainScreen) InitMain() {
+func (m *HomeScreen) InitHome() {
 	if m.initialized {
 		return
 	}
-	systems := romDirsToList(listEmulatorDirs())
+	systems := sortItemsAlphabetically(romDirsToList(listEmulatorDirs()))
 	m.listComponent.SetItems(systems)
 	config.CurrentSystem = systems[0].ID
 	m.initialized = true
@@ -59,7 +59,18 @@ func romDirsToList(romDirs []RomDir) []components.Item {
 	return items
 }
 
-func (m *MainScreen) HandleInput(event input.InputEvent) {
+func sortItemsAlphabetically(items []components.Item) []components.Item {
+	for i := 0; i < len(items); i++ {
+		for j := i + 1; j < len(items); j++ {
+			if items[i].Text > items[j].Text {
+				items[i], items[j] = items[j], items[i]
+			}
+		}
+	}
+	return items
+}
+
+func (m *HomeScreen) HandleInput(event input.InputEvent) {
 	switch event.KeyCode {
 	case "DOWN":
 		m.listComponent.ScrollDown()
@@ -79,18 +90,18 @@ func (m *MainScreen) HandleInput(event input.InputEvent) {
 	m.updateLogo()
 }
 
-func (m *MainScreen) updateLogo() {
+func (m *HomeScreen) updateLogo() {
 	selectedSystem := m.SelectedSystem()
 	config.CurrentSystem = selectedSystem.ID
 	uilib.RenderImage(m.renderer, fmt.Sprintf("%s/%s.png", config.Logos, selectedSystem.ID))
 }
 
-func (m *MainScreen) SelectedSystem() components.Item {
+func (m *HomeScreen) SelectedSystem() components.Item {
 	return m.listComponent.GetItems()[m.listComponent.GetSelectedIndex()]
 }
 
-func (m *MainScreen) Draw() {
-	m.InitMain()
+func (m *HomeScreen) Draw() {
+	m.InitHome()
 
 	_ = m.renderer.SetDrawColor(0, 0, 0, 255)
 	_ = m.renderer.Clear()
