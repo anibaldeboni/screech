@@ -10,19 +10,24 @@
   </a>
   </p>
 
-Screech is a game image scraper implemented in Go and SDL2 and was designed with Trimui Smart Pro in mind and uses [Screenscraper.fr](https://www.screenscraper.fr/) as the backend. It's inspired by Schmurtz [Scraper](https://github.com/schmurtzm/TrimUI-Smart-Pro/tree/main/Scraper) with the addition to be easier to configure and port to other handhelds.
+Screech is a game boxart scraper implemented in Go and SDL2 and was designed with Trimui Smart Pro in mind and uses [Screenscraper.fr](https://www.screenscraper.fr/) as the backend. It's inspired by Schmurtz [Scraper](https://github.com/schmurtzm/TrimUI-Smart-Pro/tree/main/Scraper) with the addition to be easier to configure and port to other handhelds.
 
 ![Screench main screen](./assets/screenshot.png)
 
+# Features
+- Multi-threaded
+- Scrape all systems at once
+- Highly configurable settings
+
 # Installation
 
-Download the binaries in the Releases section, unpack and move the folder to your device in `SDCARD/Apps`. Reboot the device and the app should appear in the `Apps` menu.
+Download the latest version in the [Releases](https://github.com/anibaldeboni/screech/releases/latest) section, unpack and move the folder to your device in `SDCARD/Apps`. Reboot the device and the app should appear in the `Apps` menu.
 
 ## Configuration
 
 Inside the app folder you'l find the `screench.yaml` file where all the app configurations are stored. You may point the Rom folder, set the screenscraper.fr username and password. Note that the console logos should be name as the same as rom dir of that systems, e.g: if your SNES roms dir is named `SFC` your logos directory should contain a `SFC.png`.
 
-If your device/OS doesn't have console logos you may find a large colection inside `assets/logos` in this repo.
+If your device/OS doesn't have console logos you'll find a large colection inside `assets/logos` in this repo.
 
 For TSP with CrossMix-OS the configuration already points to where the logos/roms/Imgs are stored and you don't need to change anything.
 
