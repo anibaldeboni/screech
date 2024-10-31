@@ -38,14 +38,13 @@ var (
 	ScreenWidth        = int32(1280)
 	ScreenHeight       = int32(720)
 	CurrentScreen      string
-	CurrentSystem      string
 	BodyFont           *ttf.Font
 	HeaderFont         *ttf.Font
 	ListFont           *ttf.Font
 	LongTextFont       *ttf.Font
 	Colors             FontColors
-	Roms               string
-	Logos              string
+	RomsBaseDir        string
+	LogosBaseDir       string
 	UiControls         = "assets/ui_controls_1280_720.bmp"
 	UiBackground       = "assets/bg.bmp"
 	UiOverlay          = "assets/bg_overlay.bmp"
@@ -87,9 +86,8 @@ func InitVars() {
 	}
 	Debug = cfg.Debug
 	CurrentScreen = "home_screen"
-	CurrentSystem = ""
-	Roms = cfg.Roms
-	Logos = cfg.Logos
+	RomsBaseDir = cfg.Roms
+	LogosBaseDir = cfg.Logos
 	MaxScanDepth = cfg.MaxScanDepth
 	if len(cfg.ExcludeExtensions) == 0 {
 		ExcludeExtensions = defaultExcludeExtensions
@@ -107,10 +105,9 @@ func InitVars() {
 	ListFont = nil
 	LongTextFont = nil
 	Colors = FontColors{
-		WHITE: sdl.Color{R: 255, G: 255, B: 255, A: 255},
-		// PRIMARY:   sdl.Color{R: 255, G: 214, B: 255, A: 255},
+		WHITE:     sdl.Color{R: 255, G: 255, B: 255, A: 255},
 		PRIMARY:   sdl.Color{R: 113, G: 255, B: 142, A: 255},
-		SECONDARY: sdl.Color{R: 231, G: 192, B: 255, A: 255},
+		SECONDARY: sdl.Color{R: 168, G: 48, B: 190, A: 255},
 		BLACK:     sdl.Color{R: 0, G: 0, B: 0, A: 255},
 	}
 }
@@ -140,10 +137,10 @@ func setSystems(systems []scraperSystem) map[string]SystemSettings {
 	return systemSettings
 }
 
-func ScrapedImgDir() string {
+func ScrapedImgDir(outputDir string) string {
 	dir := strings.ReplaceAll(Boxart.Dir, "/", string(filepath.Separator))
 	dir = strings.ReplaceAll(dir, "\\", string(filepath.Separator))
-	dir = strings.ReplaceAll(dir, "%SYSTEM%", Systems[CurrentSystem].OutputDir)
+	dir = strings.ReplaceAll(dir, "%SYSTEM%", outputDir)
 	return dir
 }
 
@@ -190,7 +187,7 @@ func readConfigFile() (*userConfigs, error) {
 
 func SaveCurrent() {
 	config := userConfigs{
-		Roms: Roms,
+		Roms: RomsBaseDir,
 		Screenscraper: scraperConfig{
 			Username: Username,
 			Password: Password,

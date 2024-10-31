@@ -18,7 +18,7 @@ exclude-extensions: # List of file extensions to exclude from the scan
 screenscraper:
   username: my_username
   password: my_password
-  threads: 1 # Number of threads to use for scraping
+  threads: 3 # Number of threads to use for scraping
   media:
     type: box-3D # choose between box-2D, box-3D, mixrbv1, mixrbv2
     width: 400

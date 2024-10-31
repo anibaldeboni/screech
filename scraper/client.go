@@ -40,10 +40,10 @@ var (
 
 const maxFileSizeBytes = 104857600 // 100MB
 
-func FindGame(ctx context.Context, systemID string, romPath string) (GameInfoResponse, error) {
+func FindGame(ctx context.Context, systemID string, romName string) (GameInfoResponse, error) {
 	var result GameInfoResponse
 
-	res, err := get(ctx, parseFindGameURL(systemID, romPath))
+	res, err := get(ctx, parseFindGameURL(systemID, romName))
 	if err != nil {
 		return result, err
 	}
@@ -86,7 +86,7 @@ func DownloadMedia(ctx context.Context, medias []Media, mediaType MediaType, des
 	return nil
 }
 
-func parseFindGameURL(systemID, romPath string) string {
+func parseFindGameURL(systemID, romName string) string {
 	u, _ := url.Parse(BaseURL)
 	q := u.Query()
 	q.Set("devid", DevID)
@@ -95,11 +95,11 @@ func parseFindGameURL(systemID, romPath string) string {
 	q.Set("output", "json")
 	q.Set("ssid", config.Username)
 	q.Set("sspassword", config.Password)
-	q.Set("sha1", SHA1Sum(romPath))
+	q.Set("sha1", SHA1Sum(romName))
 	q.Set("systemeid", systemID)
 	q.Set("romtype", "rom")
-	q.Set("romnom", cleanRomName(romPath)+".zip")
-	q.Set("romtaille", strconv.FormatInt(fileSize(romPath), 10))
+	q.Set("romnom", cleanRomName(romName)+".zip")
+	q.Set("romtaille", strconv.FormatInt(fileSize(romName), 10))
 	u.RawQuery = q.Encode()
 	return u.String()
 }

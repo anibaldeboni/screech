@@ -29,6 +29,7 @@ var (
 		_, err := os.Stat(scrapeFile)
 		return !os.IsNotExist(err)
 	}
+	targetSystems []romDirSettings
 )
 
 type counter struct {
@@ -48,6 +49,18 @@ func NewScrapingScreen(renderer *sdl.Renderer) (*ScrapingScreen, error) {
 	}, nil
 }
 
+func SetScraping() {
+	scraping = false
+}
+
+func SetTargetSystems(systems []romDirSettings) {
+	targetSystems = systems
+}
+
+func AddTargetSystem(system romDirSettings) {
+	targetSystems = append(targetSystems, system)
+}
+
 func (s *ScrapingScreen) InitScraping() {
 	if s.initialized {
 		return
@@ -58,10 +71,6 @@ func (s *ScrapingScreen) InitScraping() {
 		sdl.Point{X: 45, Y: 95},
 	)
 	s.initialized = true
-}
-
-func SetScraping() {
-	scraping = false
 }
 
 func (m *ScrapingScreen) HandleInput(event input.InputEvent) {
@@ -86,11 +95,18 @@ func (s *ScrapingScreen) Draw() {
 	_ = s.renderer.SetDrawColor(0, 0, 0, 255) // Background color
 	_ = s.renderer.Clear()
 
+	var header string
+	if len(targetSystems) > 1 {
+		header = "Scraping multiple systems"
+	} else {
+		header = "Scraping " + targetSystems[0].SystemName
+	}
+
 	uilib.RenderTexture(s.renderer, config.UiBackground, "Q2", "Q4")
 	uilib.RenderTexture(s.renderer, config.UiOverlay, "Q2", "Q4")
 	uilib.DrawText(
 		s.renderer,
-		"Scraping "+config.Systems[config.CurrentSystem].Name,
+		header,
 		sdl.Point{X: 25, Y: 25},
 		config.Colors.PRIMARY, config.HeaderFont,
 	)
@@ -115,7 +131,7 @@ func (s *ScrapingScreen) scrape() {
 	}
 	s.ctx, s.cancel = context.WithCancel(context.Background())
 	events := make(chan string)
-	roms := findRoms(s.ctx, events, filepath.Join(config.Roms, config.CurrentSystem), config.MaxScanDepth)
+	roms := findRoms(s.ctx, events, targetSystems, config.MaxScanDepth)
 
 	if roms == nil {
 		events <- "Scraping aborted!"
@@ -130,13 +146,6 @@ func (s *ScrapingScreen) scrape() {
 			s.textView.AddText(msg)
 		}
 	}(events)
-}
-
-func findRelativePath(romDir string, system string) string {
-	splittedPath := strings.Split(romDir, string(filepath.Separator))
-	systemIndex := slices.Index(splittedPath, system)
-
-	return filepath.Join(splittedPath[systemIndex:]...)
 }
 
 func calculateDepth(rootDir, targetDir string) (int, error) {
@@ -161,56 +170,70 @@ func dirExists(path string) (bool, error) {
 	return info.IsDir(), nil
 }
 
-func findRoms(ctx context.Context, events chan<- string, romDir string, maxDepth int) <-chan string {
-	roms := make(chan string, 15)
+type Rom struct {
+	Name,
+	Path,
+	OutputDir,
+	SystemID string
+}
+
+func findRoms(ctx context.Context, events chan<- string, romDirs []romDirSettings, maxDepth int) <-chan Rom {
+	roms := make(chan Rom, 15)
 
 	go func() {
 		defer close(roms)
-		if exists, err := dirExists(romDir); err != nil {
-			events <- fmt.Sprintf("Error checking directory: %v", err)
-			return
-		} else if !exists {
-			events <- fmt.Sprintf("Directory %s does not exist", romDir)
-			return
-		}
-		err := filepath.WalkDir(
-			romDir,
-			func(path string, d fs.DirEntry, err error) error {
-				if err != nil {
-					events <- fmt.Sprintf("Error reading directory: %v", err)
-					return err
-				}
-
-				select {
-				case <-ctx.Done():
-					return ctx.Err()
-				default:
-					if d.IsDir() {
-						depth, err := calculateDepth(romDir, path)
-						if err != nil {
-							events <- fmt.Sprintf("Error getting relative path: %v", err)
-							return nil
-						}
-
-						if depth > maxDepth-1 || strings.HasPrefix(filepath.Base(path), ".") {
-							return filepath.SkipDir
-						}
-						events <- "Scanning " + findRelativePath(path, config.CurrentSystem)
-					} else {
-						roms <- filepath.Base(path)
+		for _, romDir := range romDirs {
+			if exists, err := dirExists(romDir.Path); err != nil {
+				events <- fmt.Sprintf("Error checking directory: %v", err)
+				return
+			} else if !exists {
+				events <- fmt.Sprintf("Directory %s does not exist", romDir.Path)
+				return
+			}
+			err := filepath.WalkDir(
+				romDir.Path,
+				func(path string, d fs.DirEntry, err error) error {
+					if err != nil {
+						events <- fmt.Sprintf("Error reading directory: %v", err)
+						return err
 					}
-					return nil
-				}
-			})
-		if err != nil && err != context.Canceled {
-			events <- fmt.Sprintf("Error walking the path: %v", err)
+
+					select {
+					case <-ctx.Done():
+						return ctx.Err()
+					default:
+						if d.IsDir() {
+							depth, err := calculateDepth(romDir.Path, path)
+							if err != nil {
+								events <- fmt.Sprintf("Error getting relative path: %v", err)
+								return nil
+							}
+
+							if depth > maxDepth-1 || strings.HasPrefix(filepath.Base(path), ".") {
+								return filepath.SkipDir
+							}
+							events <- "Walking " + romDir.Path
+						} else {
+							roms <- Rom{
+								Name:      filepath.Base(path),
+								Path:      path,
+								OutputDir: romDir.OutputDir,
+								SystemID:  romDir.SystemID,
+							}
+						}
+						return nil
+					}
+				})
+			if err != nil && err != context.Canceled {
+				events <- fmt.Sprintf("Error walking the path: %v", err)
+			}
 		}
 	}()
 
 	return roms
 }
 
-func buildWorkerPool(ctx context.Context, cancel context.CancelFunc, workers int, roms <-chan string, events chan<- string) {
+func buildWorkerPool(ctx context.Context, cancel context.CancelFunc, workers int, roms <-chan Rom, events chan<- string) {
 	var (
 		success, failed, skipped atomic.Uint32
 		wg                       sync.WaitGroup
@@ -242,7 +265,7 @@ func buildWorkerPool(ctx context.Context, cancel context.CancelFunc, workers int
 func worker(
 	ctx context.Context,
 	wg *sync.WaitGroup,
-	roms <-chan string,
+	roms <-chan Rom,
 	events chan<- string,
 	count *counter,
 ) {
@@ -254,21 +277,21 @@ download:
 		case <-ctx.Done():
 			break download
 		default:
-			romName := strings.TrimSuffix(rom, filepath.Ext(rom))
+			romName := strings.TrimSuffix(rom.Name, filepath.Ext(rom.Name))
 
-			if isInvalidRom(rom) {
-				events <- fmt.Sprintf("Skipping %s: invalid file", rom)
+			if isInvalidRom(rom.Name) {
+				events <- fmt.Sprintf("Skipping %s: invalid file", rom.Name)
 				count.skipped.Add(1)
 				continue
 			}
-			scrapeFile := filepath.Join(config.ScrapedImgDir(), romName+".png")
+			scrapeFile := filepath.Join(config.ScrapedImgDir(rom.OutputDir), romName+".png")
 			if hasScrapedImage(scrapeFile) {
 				events <- fmt.Sprintf("Skipping %s: image already scraped", romName)
 				count.skipped.Add(1)
 				continue
 			}
 
-			if res, err := findGame(ctx, config.Systems[config.CurrentSystem].ID, rom); err != nil {
+			if res, err := findGame(ctx, rom.SystemID, rom.Name); err != nil {
 				if errors.Is(err, scraper.HTTPRequestAbortedErr) {
 					break download
 				}
