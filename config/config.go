@@ -86,7 +86,7 @@ func InitVars() {
 		return
 	}
 	Debug = cfg.Debug
-	CurrentScreen = "main_screen"
+	CurrentScreen = "home_screen"
 	CurrentSystem = ""
 	Roms = cfg.Roms
 	Logos = cfg.Logos

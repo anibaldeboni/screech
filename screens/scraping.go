@@ -72,7 +72,7 @@ func (m *ScrapingScreen) HandleInput(event input.InputEvent) {
 		m.textView.ScrollUp(1)
 	case "B":
 		if errors.Is(m.ctx.Err(), context.Canceled) {
-			config.CurrentScreen = "main_screen"
+			config.CurrentScreen = "home_screen"
 			m.initialized = false
 		} else {
 			m.cancel()

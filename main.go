@@ -72,7 +72,7 @@ func main() {
 		_ = renderer.Destroy()
 	}()
 
-	mainScreen, err := screens.NewMainScreen(renderer)
+	homeScreen, err := screens.NewHomeScreen(renderer)
 	if err != nil {
 		panic(err)
 	}
@@ -83,12 +83,12 @@ func main() {
 	}
 
 	screensMap := map[string]func(){
-		"main_screen":     mainScreen.Draw,
+		"home_screen":     homeScreen.Draw,
 		"scraping_screen": scrapingScreen.Draw,
 	}
 
 	inputHandlers := map[string]func(input.InputEvent){
-		"main_screen":     mainScreen.HandleInput,
+		"home_screen":     homeScreen.HandleInput,
 		"scraping_screen": scrapingScreen.HandleInput,
 	}
 
