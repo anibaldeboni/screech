@@ -104,13 +104,26 @@ func parseFindGameURL(systemID, romPath string) string {
 	return u.String()
 }
 
-func findMediaURLByRegion(medias []Media, mediaType MediaType) (string, error) {
-	var mediaURL string
+func filterMediasByType(medias []Media, mediaType MediaType) []Media {
+	var filtered []Media
+	for _, media := range medias {
+		if media.Type == string(mediaType) {
+			filtered = append(filtered, media)
+		}
+	}
+	return filtered
+}
+
+func findMediaURLByRegion(medias []Media, mediaType MediaType) (mediaURL string, err error) {
+	mediasByType := filterMediasByType(medias, mediaType)
+	if len(mediasByType) == 0 {
+		return mediaURL, fmt.Errorf("media not found for type: %s", mediaType)
+	}
 
 findmedia:
-	for _, r := range config.GameRegions {
-		for _, media := range medias {
-			if media.Type == string(mediaType) && media.Region == r {
+	for _, r := range config.Media.Regions {
+		for _, media := range mediasByType {
+			if media.Region == r {
 				mediaURL = media.URL
 				break findmedia
 			}
@@ -118,7 +131,11 @@ findmedia:
 	}
 
 	if mediaURL == "" {
-		return mediaURL, fmt.Errorf("media not found for regions: %v", config.GameRegions)
+		if config.Media.IgnoreMissingRegion {
+			mediaURL = mediasByType[0].URL
+		} else {
+			return mediaURL, fmt.Errorf("media not found for regions: %s", config.Media.Regions)
+		}
 	}
 
 	return mediaURL, nil

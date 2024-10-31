@@ -23,6 +23,7 @@ screenscraper:
     type: box-3D # choose between box-2D, box-3D, mixrbv1, mixrbv2
     width: 400
     height: 580
+    ignore-missing-region: true # Ignore missing region in the database. Will use the first boxart region found
     regions:
       - br
       - us

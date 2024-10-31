@@ -129,7 +129,7 @@ func TestDownloadMedia(t *testing.T) {
 	defer server.Close()
 
 	scraper.BaseURL = server.URL + "/get-media"
-	config.GameRegions = []string{"br"}
+	config.Media.Regions = []string{"br"}
 	err := scraper.DownloadMedia(
 		context.Background(),
 		[]scraper.Media{
@@ -153,7 +153,7 @@ func TestDownloadMediaCancelContext(t *testing.T) {
 	defer server.Close()
 
 	scraper.BaseURL = server.URL + "/get-media"
-	config.GameRegions = []string{"br"}
+	config.Media.Regions = []string{"br"}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
@@ -179,7 +179,7 @@ func TestDownloadMediaInvalidRegion(t *testing.T) {
 	defer server.Close()
 
 	scraper.BaseURL = server.URL + "/get-media"
-	config.GameRegions = []string{"ar"}
+	config.Media.Regions = []string{"ar"}
 	err := scraper.DownloadMedia(
 		context.Background(),
 		[]scraper.Media{
@@ -199,13 +199,38 @@ func TestDownloadMediaInvalidRegion(t *testing.T) {
 	}
 }
 
+func TestDownloadMediaIgnoringMissingRegion(t *testing.T) {
+	server := setupStubServer(t, "")
+
+	defer server.Close()
+
+	scraper.BaseURL = server.URL + "/get-media"
+	config.Media.Regions = []string{"ar"}
+	config.Media.IgnoreMissingRegion = true
+	err := scraper.DownloadMedia(
+		context.Background(),
+		[]scraper.Media{
+			{
+				URL:    server.URL + "/get-media",
+				Type:   "box-3D",
+				Region: "br",
+			},
+		}, scraper.Box3D, "screenshot.png")
+
+	os.Remove("screenshot.png")
+
+	if err != nil {
+		t.Errorf("Expected no error, got %s", err.Error())
+	}
+}
+
 func TestDownloadMediaInvalidMediaType(t *testing.T) {
 	server := setupStubServer(t, "")
 
 	defer server.Close()
 
 	scraper.BaseURL = server.URL + "/get-media"
-	config.GameRegions = []string{"br"}
+	config.Media.Regions = []string{"br"}
 	err := scraper.DownloadMedia(
 		context.Background(),
 		[]scraper.Media{
