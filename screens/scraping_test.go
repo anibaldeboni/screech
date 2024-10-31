@@ -18,52 +18,72 @@ import (
 func TestFindRoms(t *testing.T) {
 	tests := []struct {
 		name      string
-		setup     func(t *testing.T) string
+		setup     func(t *testing.T) romDirSettings
 		maxDepth  int
 		expected  []string
 		expectErr bool
 	}{
 		{
 			name: "Basic test",
-			setup: func(t *testing.T) string {
+			setup: func(t *testing.T) romDirSettings {
 				dir := t.TempDir()
 				_ = os.WriteFile(filepath.Join(dir, "game1.rom"), []byte{}, 0644)
 				_ = os.WriteFile(filepath.Join(dir, "game2.rom"), []byte{}, 0644)
 				_ = os.Mkdir(filepath.Join(dir, "subdir"), 0755)
 				_ = os.WriteFile(filepath.Join(dir, "subdir", "game3.rom"), []byte{}, 0644)
-				return dir
+				return romDirSettings{
+					DirName:    "roms",
+					Path:       dir,
+					OutputDir:  "output",
+					SystemName: "system",
+				}
 			},
 			maxDepth: 2,
 			expected: []string{"game1.rom", "game2.rom", "game3.rom"},
 		},
 		{
 			name: "Skip hidden directories",
-			setup: func(t *testing.T) string {
+			setup: func(t *testing.T) romDirSettings {
 				dir := t.TempDir()
 				_ = os.Mkdir(filepath.Join(dir, ".hidden"), 0755)
 				_ = os.WriteFile(filepath.Join(dir, ".hidden", "game1.rom"), []byte{}, 0644)
 				_ = os.WriteFile(filepath.Join(dir, "game2.rom"), []byte{}, 0644)
-				return dir
+				return romDirSettings{
+					DirName:    "roms",
+					Path:       dir,
+					OutputDir:  "output",
+					SystemName: "system",
+				}
 			},
 			maxDepth: 2,
 			expected: []string{"game2.rom"},
 		},
 		{
 			name: "Skip directories beyond maxDepth",
-			setup: func(t *testing.T) string {
+			setup: func(t *testing.T) romDirSettings {
 				dir := t.TempDir()
 				_ = os.WriteFile(filepath.Join(dir, "game1.rom"), []byte{}, 0644)
 				_ = os.Mkdir(filepath.Join(dir, "subdir"), 0755)
 				_ = os.WriteFile(filepath.Join(dir, "subdir", "game2.rom"), []byte{}, 0644)
-				return dir
+				return romDirSettings{
+					DirName:    "roms",
+					Path:       dir,
+					OutputDir:  "output",
+					SystemName: "system",
+				}
 			},
 			maxDepth: 1,
 			expected: []string{"game1.rom"},
 		},
 		{
 			name: "Directory does not exists",
-			setup: func(t *testing.T) string {
-				return "/nonexistent"
+			setup: func(t *testing.T) romDirSettings {
+				return romDirSettings{
+					DirName:    "roms",
+					Path:       "/nonexistent",
+					OutputDir:  "output",
+					SystemName: "system",
+				}
 			},
 			maxDepth:  2,
 			expected:  []string{},
@@ -78,11 +98,11 @@ func TestFindRoms(t *testing.T) {
 			defer cancel()
 
 			events := make(chan string, 10)
-			roms := findRoms(ctx, events, dir, tt.maxDepth)
+			roms := findRoms(ctx, events, []romDirSettings{dir}, tt.maxDepth)
 
 			var result []string
 			for rom := range roms {
-				result = append(result, rom)
+				result = append(result, rom.Name)
 			}
 
 			if len(result) != len(tt.expected) {
@@ -112,7 +132,7 @@ func TestFindRoms(t *testing.T) {
 func TestWorker(t *testing.T) {
 	tests := []struct {
 		name                string
-		roms                []string
+		roms                []Rom
 		findGameFunc        func(ctx context.Context, systemID string, romPath string) (scraper.GameInfoResponse, error)
 		downloadMediaFunc   func(context.Context, []scraper.Media, scraper.MediaType, string) error
 		hasScrapedImageFunc func(string) bool
@@ -121,7 +141,9 @@ func TestWorker(t *testing.T) {
 	}{
 		{
 			name: "Valid ROM",
-			roms: []string{"game1.rom"},
+			roms: []Rom{
+				{Name: "game1.rom", Path: "game1.rom", OutputDir: "output", SystemID: "1"},
+			},
 			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
 				return scraper.GameInfoResponse{}, nil
 			},
@@ -136,7 +158,9 @@ func TestWorker(t *testing.T) {
 		},
 		{
 			name: "Invalid ROM",
-			roms: []string{"game1.txt"},
+			roms: []Rom{
+				{Name: "game1.txt", Path: "game1.txt", OutputDir: "output", SystemID: "1"},
+			},
 			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
 				return scraper.GameInfoResponse{}, nil
 			},
@@ -151,7 +175,9 @@ func TestWorker(t *testing.T) {
 		},
 		{
 			name: "Already scraped ROM",
-			roms: []string{"game1.rom"},
+			roms: []Rom{
+				{Name: "game1.rom", Path: "game1.rom", OutputDir: "output", SystemID: "1"},
+			},
 			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
 				return scraper.GameInfoResponse{}, nil
 			},
@@ -166,7 +192,9 @@ func TestWorker(t *testing.T) {
 		},
 		{
 			name: "Scraping error",
-			roms: []string{"game1.rom"},
+			roms: []Rom{
+				{Name: "game1.rom", Path: "game1.rom", OutputDir: "output", SystemID: "1"},
+			},
 			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
 				return scraper.GameInfoResponse{}, errors.New("scraping error")
 			},
@@ -186,7 +214,7 @@ func TestWorker(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 			defer cancel()
 
-			roms := make(chan string, len(tt.roms))
+			roms := make(chan Rom, len(tt.roms))
 			for _, rom := range tt.roms {
 				roms <- rom
 			}
@@ -249,7 +277,7 @@ func TestWorker(t *testing.T) {
 func TestBuildWorkerPool(t *testing.T) {
 	tests := []struct {
 		name                string
-		roms                []string
+		roms                []Rom
 		findGameFunc        func(ctx context.Context, systemID string, romPath string) (scraper.GameInfoResponse, error)
 		downloadMediaFunc   func(context.Context, []scraper.Media, scraper.MediaType, string) error
 		hasScrapedImageFunc func(string) bool
@@ -258,7 +286,10 @@ func TestBuildWorkerPool(t *testing.T) {
 	}{
 		{
 			name: "All valid ROMs",
-			roms: []string{"game1.rom", "game2.rom"},
+			roms: []Rom{
+				{Name: "game1.rom", Path: "game1.rom", OutputDir: "output", SystemID: "1"},
+				{Name: "game2.rom", Path: "game2.rom", OutputDir: "output", SystemID: "1"},
+			},
 			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
 				return scraper.GameInfoResponse{}, nil
 			},
@@ -273,7 +304,10 @@ func TestBuildWorkerPool(t *testing.T) {
 		},
 		{
 			name: "Some invalid ROMs",
-			roms: []string{"game1.rom", "game2.txt"},
+			roms: []Rom{
+				{Name: "game1.rom", Path: "game1.rom", OutputDir: "output", SystemID: "1"},
+				{Name: "game2.txt", Path: "game2.txt", OutputDir: "output", SystemID: "1"},
+			},
 			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
 				return scraper.GameInfoResponse{}, nil
 			},
@@ -288,7 +322,10 @@ func TestBuildWorkerPool(t *testing.T) {
 		},
 		{
 			name: "Already scraped ROMs",
-			roms: []string{"game1.rom", "game2.rom"},
+			roms: []Rom{
+				{Name: "game1.rom", Path: "game1.rom", OutputDir: "output", SystemID: "1"},
+				{Name: "game2.rom", Path: "game2.rom", OutputDir: "output", SystemID: "1"},
+			},
 			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
 				return scraper.GameInfoResponse{}, nil
 			},
@@ -303,7 +340,9 @@ func TestBuildWorkerPool(t *testing.T) {
 		},
 		{
 			name: "Scraping error",
-			roms: []string{"game1.rom"},
+			roms: []Rom{
+				{Name: "game1.rom", Path: "game1.rom", OutputDir: "output", SystemID: "1"},
+			},
 			findGameFunc: func(ctx context.Context, systemID string, rom string) (scraper.GameInfoResponse, error) {
 				return scraper.GameInfoResponse{}, errors.New("scraping error")
 			},
@@ -323,7 +362,7 @@ func TestBuildWorkerPool(t *testing.T) {
 			ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 			defer cancel()
 
-			roms := make(chan string, len(tt.roms))
+			roms := make(chan Rom, len(tt.roms))
 			for _, rom := range tt.roms {
 				roms <- rom
 			}

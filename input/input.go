@@ -27,6 +27,7 @@ func listenForKeyboardEvents() {
 		sdl.SCANCODE_UP:     "UP",
 		sdl.SCANCODE_A:      "A",
 		sdl.SCANCODE_B:      "B",
+		sdl.SCANCODE_X:      "X",
 		sdl.SCANCODE_RETURN: "START",
 		sdl.SCANCODE_ESCAPE: "SELECT",
 	}
@@ -54,8 +55,8 @@ func listenForControllerEvents() {
 		sdl.CONTROLLER_BUTTON_DPAD_UP:   "UP",
 		sdl.CONTROLLER_BUTTON_A:         "B",
 		sdl.CONTROLLER_BUTTON_B:         "A",
-		sdl.CONTROLLER_BUTTON_X:         "X",
-		sdl.CONTROLLER_BUTTON_Y:         "Y",
+		sdl.CONTROLLER_BUTTON_X:         "Y",
+		sdl.CONTROLLER_BUTTON_Y:         "X",
 		sdl.CONTROLLER_BUTTON_START:     "START",
 		sdl.CONTROLLER_BUTTON_BACK:      "SELECT",
 		sdl.CONTROLLER_BUTTON_GUIDE:     "MENU",

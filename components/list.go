@@ -8,39 +8,40 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-type Item struct {
-	Text  string
-	ID    string
-	Value string
+type Item[T any] struct {
+	Label string
+	Value T
 }
 
-type List struct {
+type fmtFunc[T any] func(index int, item Item[T]) string
+
+type List[T any] struct {
 	renderer        *sdl.Renderer
-	itemFormatter   func(index int, item Item) string
-	items           []Item
+	itemFormatter   fmtFunc[T]
+	items           []Item[T]
 	selectedIndex   int
 	scrollOffset    int
 	maxVisibleItems int
 	position        sdl.Point
 }
 
-func NewList(renderer *sdl.Renderer, maxVisibleItems int, position sdl.Point, itemFormatter func(index int, item Item) string) *List {
-	return &List{
+func NewList[T any](renderer *sdl.Renderer, maxVisibleItems int, position sdl.Point, itemFormatter fmtFunc[T]) *List[T] {
+	return &List[T]{
 		renderer:        renderer,
 		itemFormatter:   itemFormatter,
 		maxVisibleItems: maxVisibleItems,
-		items:           []Item{},
+		items:           []Item[T]{},
 		position:        position,
 	}
 }
 
-func (l *List) SetItems(items []Item) {
+func (l *List[T]) SetItems(items []Item[T]) {
 	l.items = items
 	l.selectedIndex = 0
 	l.scrollOffset = 0
 }
 
-func (l *List) ScrollDown() {
+func (l *List[T]) ScrollDown() {
 	if l.selectedIndex < len(l.items)-1 {
 		l.selectedIndex++
 		if l.selectedIndex >= l.scrollOffset+l.maxVisibleItems {
@@ -49,7 +50,7 @@ func (l *List) ScrollDown() {
 	}
 }
 
-func (l *List) ScrollUp() {
+func (l *List[T]) ScrollUp() {
 	if l.selectedIndex > 0 {
 		l.selectedIndex--
 		if l.selectedIndex < l.scrollOffset {
@@ -58,7 +59,7 @@ func (l *List) ScrollUp() {
 	}
 }
 
-func (l *List) Draw(primaryColor sdl.Color, selectedColor sdl.Color) {
+func (l *List[T]) Draw(primaryColor sdl.Color, selectedColor sdl.Color) {
 	// Draw the items
 	startIndex := l.scrollOffset
 	endIndex := startIndex + l.maxVisibleItems
@@ -91,14 +92,22 @@ func (l *List) Draw(primaryColor sdl.Color, selectedColor sdl.Color) {
 	}
 }
 
-func (l *List) GetSelectedIndex() int {
+func (l *List[T]) GetSelectedIndex() int {
 	return l.selectedIndex
 }
 
-func (l *List) GetScrollOffset() int {
+func (l *List[T]) GetScrollOffset() int {
 	return l.scrollOffset
 }
 
-func (l *List) GetItems() []Item {
-	return l.items
+func (l *List[T]) SelectedValue() T {
+	return l.items[l.selectedIndex].Value
+}
+
+func (l *List[T]) GetValues() []T {
+	values := make([]T, 0, len(l.items))
+	for _, item := range l.items {
+		values = append(values, item.Value)
+	}
+	return values
 }
