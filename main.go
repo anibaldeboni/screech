@@ -52,11 +52,15 @@ func main() {
 		panic(err)
 	}
 
+	if err := uilib.InitFont(RobotoCondensed, &config.LongTextFont, 20); err != nil {
+		panic(err)
+	}
+
 	if err := uilib.InitFont(RobotBoldCondensed, &config.HeaderFont, 38); err != nil {
 		panic(err)
 	}
 
-	window, err := sdl.CreateWindow("ScreechApp", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, config.ScreenWidth, config.ScreenHeight, sdl.WINDOW_SHOWN)
+	window, err := sdl.CreateWindow("ScreechApp-"+config.Version, sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, config.ScreenWidth, config.ScreenHeight, sdl.WINDOW_SHOWN)
 	if err != nil {
 		panic(err)
 	}

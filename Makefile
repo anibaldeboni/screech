@@ -1,6 +1,7 @@
 MODULE := github.com/anibaldeboni/screech
 DEV_ID := ${MODULE}/scraper.DevID=${SS_DEV_ID}
 DEV_PASSWORD := ${MODULE}/scraper.DevPassword=${SS_DEV_PASSWORD}
+VERSION := ${MODULE}/config.Version=$(shell git tag --sort=-version:refname | head -n 1)
 DIST_DIR := ScreechApp
 BIN_DIR := bin
 
@@ -44,14 +45,14 @@ build:
 	GOOS=linux \
 	go build \
 	-tags static \
-	-ldflags "-s -w -X ${DEV_ID} -X ${DEV_PASSWORD}" \
+	-ldflags "-s -w -X ${DEV_ID} -X ${DEV_PASSWORD} -X ${VERSION}" \
 	-o bin/app ./
 
 clean:
 	@rm -rf ${BIN_DIR}/* ${DIST_DIR}/*
 
 run:
-	@go run -ldflags "-X ${DEV_ID} -X ${DEV_PASSWORD}" main.go --config=./includes/screech.yaml
+	@go run -ldflags "-X ${DEV_ID} -X ${DEV_PASSWORD} -X ${VERSION}" main.go --config=./includes/screech.yaml
 
 lint: ##@dev Run lint (download from https://golangci-lint.run/usage/install/#local-installation)
 	@golangci-lint run -v

@@ -64,6 +64,7 @@ type userConfigs struct {
 }
 
 var (
+	Version            = "dev"
 	ConfigFile         = "screech.yaml"
 	Debug              bool
 	ScreenWidth        = int32(1280)

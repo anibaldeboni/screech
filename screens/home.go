@@ -89,7 +89,8 @@ func (h *HomeScreen) Draw() {
 	_ = h.renderer.Clear()
 
 	uilib.RenderTexture(h.renderer, config.UiBackground, "Q2", "Q4")
-	uilib.DrawText(h.renderer, "Systems", sdl.Point{X: 25, Y: 25}, config.Colors.PRIMARY, config.HeaderFont)
+	uilib.DrawText(h.renderer, "SCREECH", sdl.Point{X: 25, Y: 25}, config.Colors.PRIMARY, config.HeaderFont)
+	uilib.DrawText(h.renderer, config.Version, sdl.Point{X: 1200, Y: 35}, config.Colors.PRIMARY, config.LongTextFont)
 	uilib.RenderTexture(h.renderer, config.UiOverlaySelection, "Q2", "Q4")
 
 	h.listComponent.Draw(config.Colors.WHITE, config.Colors.SECONDARY)
