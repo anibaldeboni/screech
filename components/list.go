@@ -47,6 +47,9 @@ func (l *List[T]) ScrollDown() {
 		if l.selectedIndex >= l.scrollOffset+l.maxVisibleItems {
 			l.scrollOffset++
 		}
+	} else {
+		l.selectedIndex = 0
+		l.scrollOffset = 0
 	}
 }
 
@@ -56,6 +59,9 @@ func (l *List[T]) ScrollUp() {
 		if l.selectedIndex < l.scrollOffset {
 			l.scrollOffset--
 		}
+	} else {
+		l.selectedIndex = len(l.items) - 1
+		l.scrollOffset = 0
 	}
 }
 
@@ -101,6 +107,11 @@ func (l *List[T]) GetScrollOffset() int {
 }
 
 func (l *List[T]) SelectedValue() T {
+	if len(l.items) == 0 {
+		var zeroValue T
+		return zeroValue
+	}
+
 	return l.items[l.selectedIndex].Value
 }
 

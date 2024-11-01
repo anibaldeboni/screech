@@ -15,9 +15,10 @@ import (
 )
 
 type HomeScreen struct {
-	renderer      *sdl.Renderer
-	listComponent *components.List[romDirSettings]
-	initialized   bool
+	renderer    *sdl.Renderer
+	systemsList *components.List[romDirSettings]
+	textView    *components.TextView
+	initialized bool
 }
 
 type romDirSettings struct {
@@ -31,7 +32,7 @@ type romDirSettings struct {
 func NewHomeScreen(renderer *sdl.Renderer) (*HomeScreen, error) {
 	return &HomeScreen{
 		renderer: renderer,
-		listComponent: components.NewList(
+		systemsList: components.NewList(
 			renderer,
 			18,
 			sdl.Point{X: 45, Y: 95},
@@ -39,32 +40,49 @@ func NewHomeScreen(renderer *sdl.Renderer) (*HomeScreen, error) {
 				return fmt.Sprintf("%d. %s", index+1, item.Label)
 			},
 		),
+		textView: components.NewTextView(
+			renderer,
+			components.TextViewSize{Width: 50, Height: 18},
+			sdl.Point{X: 545, Y: 96},
+		),
 	}, nil
 }
 
-func (m *HomeScreen) InitHome() {
-	if m.initialized {
+func (h *HomeScreen) InitHome() {
+	if h.initialized {
 		return
 	}
-	systems := sortItemsAlphabetically(romDirsToList(listRomsDirs()))
-	m.listComponent.SetItems(systems)
-	m.initialized = true
+
+	romDirs, err := listRomsDirs()
+	if err != nil {
+		h.textView.AddText(err.Error())
+	}
+	systems := sortItemsAlphabetically(romDirsToList(romDirs))
+	h.systemsList.SetItems(systems)
+	h.initialized = true
 }
 
 func (h *HomeScreen) HandleInput(event input.InputEvent) {
 	switch event.KeyCode {
 	case "DOWN":
-		h.listComponent.ScrollDown()
+		h.systemsList.ScrollDown()
 	case "UP":
-		h.listComponent.ScrollUp()
+		h.systemsList.ScrollUp()
 	case "B":
 		os.Exit(0)
 	case "A":
-		h.goToScraping([]romDirSettings{h.listComponent.SelectedValue()})
+		if h.isNotInErrorMode() {
+			h.goToScraping([]romDirSettings{h.systemsList.SelectedValue()})
+		}
 	case "X":
-		h.goToScraping(h.listComponent.GetValues())
+		if h.isNotInErrorMode() {
+			h.goToScraping(h.systemsList.GetValues())
+		}
 	}
-	h.updateLogo()
+}
+
+func (h *HomeScreen) isNotInErrorMode() bool {
+	return len(h.textView.GetText()) == 0
 }
 
 func (h *HomeScreen) goToScraping(systems []romDirSettings) {
@@ -78,8 +96,12 @@ func (h *HomeScreen) goToScraping(systems []romDirSettings) {
 }
 
 func (h *HomeScreen) updateLogo() {
-	selectedSystem := h.listComponent.SelectedValue()
-	uilib.RenderImage(h.renderer, fmt.Sprintf("%s/%s.png", config.LogosBaseDir, selectedSystem.DirName))
+	selectedSystem := h.systemsList.SelectedValue()
+	logoPath := fmt.Sprintf("%s/%s.png", config.LogosBaseDir, selectedSystem.DirName)
+
+	if _, err := os.Stat(logoPath); err == nil {
+		uilib.RenderImage(h.renderer, logoPath)
+	}
 }
 
 func (h *HomeScreen) Draw() {
@@ -93,10 +115,15 @@ func (h *HomeScreen) Draw() {
 	uilib.DrawText(h.renderer, config.Version, sdl.Point{X: 1200, Y: 35}, config.Colors.PRIMARY, config.LongTextFont)
 	uilib.RenderTexture(h.renderer, config.UiOverlaySelection, "Q2", "Q4")
 
-	h.listComponent.Draw(config.Colors.WHITE, config.Colors.SECONDARY)
+	h.systemsList.Draw(config.Colors.WHITE, config.Colors.SECONDARY)
 
 	uilib.RenderTexture(h.renderer, config.UiControls, "Q3", "Q4")
-	h.updateLogo()
+
+	if len(h.textView.GetText()) > 0 {
+		h.textView.Draw(config.Colors.WHITE)
+	} else {
+		h.updateLogo()
+	}
 
 	h.renderer.Present()
 }
@@ -139,20 +166,19 @@ type RomDir struct {
 	Path string
 }
 
-func listRomsDirs() []RomDir {
-	romsDir := config.RomsBaseDir
-	dirEntries, err := os.ReadDir(romsDir)
+func listRomsDirs() ([]RomDir, error) {
+	dirEntries, err := os.ReadDir(config.RomsBaseDir)
 	if err != nil {
-		panic(fmt.Errorf("error reading dir %s: %w", romsDir, err))
+		return nil, fmt.Errorf("error reading dir %s: %w", config.RomsBaseDir, err)
 	}
 
 	var dirs []RomDir
 	for _, entry := range dirEntries {
 		if entry.IsDir() && !strings.HasPrefix(entry.Name(), ".") {
-			dirPath := filepath.Join(romsDir, entry.Name())
+			dirPath := filepath.Join(config.RomsBaseDir, entry.Name())
 			dirFiles, err := os.ReadDir(dirPath)
 			if err != nil {
-				panic(fmt.Errorf("error reading dir %s: %w", dirPath, err))
+				return nil, fmt.Errorf("error reading dir %s: %w", dirPath, err)
 			}
 			if len(dirFiles) > 0 {
 				dirs = append(dirs, RomDir{
@@ -163,5 +189,5 @@ func listRomsDirs() []RomDir {
 		}
 	}
 
-	return dirs
+	return dirs, nil
 }
