@@ -32,6 +32,37 @@ type ScrapeMedia struct {
 	IgnoreMissingRegion bool     `yaml:"ignore-missing-region"`
 }
 
+type scraperConfig struct {
+	Username string      `yaml:"username"`
+	Password string      `yaml:"password"`
+	Media    ScrapeMedia `yaml:"media"`
+	Threads  int         `yaml:"threads"`
+}
+
+type scraperSystem struct {
+	ID        string `yaml:"id"`
+	Name      string `yaml:"name"`
+	OutputDir string `yaml:"output-dir,omitempty"`
+	Dir       string `yaml:"dir"`
+}
+
+type boxartConfig struct {
+	Dir    string `yaml:"dir"`
+	Width  int    `yaml:"width"`
+	Height int    `yaml:"height"`
+}
+type userConfigs struct {
+	Boxart                  boxartConfig    `yaml:"thumbnail"`
+	Roms                    string          `yaml:"roms"`
+	Logos                   string          `yaml:"logos"`
+	Screenscraper           scraperConfig   `yaml:"screenscraper"`
+	Systems                 []scraperSystem `yaml:"systems"`
+	MaxScanDepth            int             `yaml:"max-scan-depth"`
+	ExcludeExtensions       []string        `yaml:"exclude-extensions"`
+	IgnoreSkippedRomMessage bool            `yaml:"ignore-skipped-rom-message,omitempty"`
+	Debug                   bool            `yaml:"debug,omitempty"`
+}
+
 var (
 	ConfigFile         = "screech.yaml"
 	Debug              bool
@@ -76,6 +107,7 @@ var (
 		".state",
 		".srm",
 	}
+	IgnoreSkippedRomMessage bool
 )
 
 func InitVars() {
@@ -94,6 +126,7 @@ func InitVars() {
 	} else {
 		ExcludeExtensions = cfg.ExcludeExtensions
 	}
+	IgnoreSkippedRomMessage = cfg.IgnoreSkippedRomMessage
 	Username = cfg.Screenscraper.Username
 	Password = cfg.Screenscraper.Password
 	Threads = cfg.Screenscraper.Threads
@@ -142,36 +175,6 @@ func ScrapedImgDir(outputDir string) string {
 	dir = strings.ReplaceAll(dir, "\\", string(filepath.Separator))
 	dir = strings.ReplaceAll(dir, "%SYSTEM%", outputDir)
 	return dir
-}
-
-type scraperConfig struct {
-	Username string      `yaml:"username"`
-	Password string      `yaml:"password"`
-	Media    ScrapeMedia `yaml:"media"`
-	Threads  int         `yaml:"threads"`
-}
-
-type scraperSystem struct {
-	ID        string `yaml:"id"`
-	Name      string `yaml:"name"`
-	OutputDir string `yaml:"output-dir,omitempty"`
-	Dir       string `yaml:"dir"`
-}
-
-type boxartConfig struct {
-	Dir    string `yaml:"dir"`
-	Width  int    `yaml:"width"`
-	Height int    `yaml:"height"`
-}
-type userConfigs struct {
-	Boxart            boxartConfig    `yaml:"thumbnail"`
-	Roms              string          `yaml:"roms"`
-	Logos             string          `yaml:"logos"`
-	Screenscraper     scraperConfig   `yaml:"screenscraper"`
-	Systems           []scraperSystem `yaml:"systems"`
-	MaxScanDepth      int             `yaml:"max-scan-depth"`
-	ExcludeExtensions []string        `yaml:"exclude-extensions"`
-	Debug             bool            `yaml:"debug,omitempty"`
 }
 
 func readConfigFile() (*userConfigs, error) {
