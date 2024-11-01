@@ -170,8 +170,8 @@ func TestWorker(t *testing.T) {
 			hasScrapedImageFunc: func(rom string) bool {
 				return false
 			},
-			expectedEvents: []string{"Skipping game1.txt: invalid file"},
-			expectedCounts: counter{success: newUint32(0), failed: newUint32(0), skipped: newUint32(1)},
+			expectedEvents: []string{},
+			expectedCounts: counter{success: newUint32(0), failed: newUint32(0), skipped: newUint32(0)},
 		},
 		{
 			name: "Already scraped ROM",
@@ -317,8 +317,8 @@ func TestBuildWorkerPool(t *testing.T) {
 			hasScrapedImageFunc: func(rom string) bool {
 				return false
 			},
-			expectedEvents: []string{"Scrapped game1", "Skipping game2.txt: invalid file", "Scraping finished.", "Success: 1", "Failed: 0", "Skipped: 1"},
-			expectedCounts: counter{success: newUint32(1), failed: newUint32(0), skipped: newUint32(1)},
+			expectedEvents: []string{"Scrapped game1", "Scraping finished.", "Success: 1", "Failed: 0", "Skipped: 0"},
+			expectedCounts: counter{success: newUint32(1), failed: newUint32(0), skipped: newUint32(0)},
 		},
 		{
 			name: "Already scraped ROMs",

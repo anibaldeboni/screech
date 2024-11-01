@@ -32,15 +32,23 @@ var (
 	targetSystems []romDirSettings
 )
 
-type counter struct {
-	success, failed, skipped *atomic.Uint32
-}
 type ScrapingScreen struct {
 	ctx         context.Context
 	renderer    *sdl.Renderer
 	textView    *components.TextView
 	cancel      context.CancelFunc
 	initialized bool
+}
+
+type Rom struct {
+	Name,
+	Path,
+	OutputDir,
+	SystemID string
+}
+
+type counter struct {
+	success, failed, skipped *atomic.Uint32
 }
 
 func NewScrapingScreen(renderer *sdl.Renderer) (*ScrapingScreen, error) {
@@ -170,13 +178,6 @@ func dirExists(path string) (bool, error) {
 	return info.IsDir(), nil
 }
 
-type Rom struct {
-	Name,
-	Path,
-	OutputDir,
-	SystemID string
-}
-
 func findRoms(ctx context.Context, events chan<- string, romDirs []romDirSettings, maxDepth int) <-chan Rom {
 	roms := make(chan Rom, 15)
 
@@ -277,16 +278,17 @@ download:
 		case <-ctx.Done():
 			break download
 		default:
-			romName := strings.TrimSuffix(rom.Name, filepath.Ext(rom.Name))
-
 			if isInvalidRom(rom.Name) {
-				events <- fmt.Sprintf("Skipping %s: invalid file", rom.Name)
-				count.skipped.Add(1)
 				continue
 			}
+
+			romName := strings.TrimSuffix(rom.Name, filepath.Ext(rom.Name))
 			scrapeFile := filepath.Join(config.ScrapedImgDir(rom.OutputDir), romName+".png")
+
 			if hasScrapedImage(scrapeFile) {
-				events <- fmt.Sprintf("Skipping %s: image already scraped", romName)
+				if !config.IgnoreSkippedRomMessage {
+					events <- fmt.Sprintf("Skipping %s: image already scraped", romName)
+				}
 				count.skipped.Add(1)
 				continue
 			}
