@@ -1,7 +1,7 @@
 MODULE := github.com/anibaldeboni/screech
 DEV_ID := ${MODULE}/scraper.DevID=${SS_DEV_ID}
 DEV_PASSWORD := ${MODULE}/scraper.DevPassword=${SS_DEV_PASSWORD}
-VERSION := ${MODULE}/config.Version=$(shell git tag --sort=-version:refname | head -n 1)
+# VERSION := ""
 DIST_DIR := ScreechApp
 BIN_DIR := bin
 
@@ -12,6 +12,12 @@ UNAME_S := $(shell uname -s)
 CFLAGS := ""
 LDFLAGS := ""
 CC := ""
+
+ifndef APP_VERSION
+VERSION=${MODULE}/config.Version=$(shell git tag --sort=-version:refname | head -n 1)
+else
+VERSION=${MODULE}/config.Version=${APP_VERSION}
+endif
 
 # Set flags based on the operating system
 ifeq ($(UNAME_S), Darwin)

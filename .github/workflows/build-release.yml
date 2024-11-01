@@ -15,6 +15,7 @@ jobs:
       env:
         SS_DEV_ID: ${{ secrets.SS_DEV_ID }}
         SS_DEV_PASSWORD: ${{ secrets.SS_DEV_PASSWORD }}
+        APP_VERSION: ${{ github.ref_name }}
     steps:
         - name: Check out the repo
           uses: actions/checkout@v4
