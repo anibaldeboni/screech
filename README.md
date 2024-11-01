@@ -10,14 +10,16 @@
   </a>
   </p>
 
-Screech is a game boxart scraper implemented in Go and SDL2 and was designed with Trimui Smart Pro in mind and uses [Screenscraper.fr](https://www.screenscraper.fr/) as the backend. It's inspired by Schmurtz [Scraper](https://github.com/schmurtzm/TrimUI-Smart-Pro/tree/main/Scraper) with the addition to be easier to configure and port to other handhelds.
+Screech is a game boxart scraper implemented in Go and SDL2, designed with Trimui Smart Pro in mind and uses [Screenscraper.fr](https://www.screenscraper.fr/) as the backend. It's inspired by Schmurtz [Scraper](https://github.com/schmurtzm/TrimUI-Smart-Pro/tree/main/Scraper) with the addition to be easier to configure and port to other handhelds.
 
-![Screench main screen](./assets/screenshot.png)
+![Screench home screen](./assets/screenshot.png)
 
 # Features
 - Multi-threaded
 - Scrape all systems at once
-- Highly configurable settings
+- Media region fallback
+- File types ignore
+- and more
 
 # Installation
 
