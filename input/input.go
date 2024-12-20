@@ -79,6 +79,15 @@ func listenForControllerEvents() {
 	}
 }
 
+func isAllowedRepeatableKey(current, previous uint, allowed ...uint) bool {
+	for _, a := range allowed {
+		if current == a {
+			return true
+		}
+	}
+	return current == previous
+}
+
 func openController() *sdl.GameController {
 	for i := 0; i < sdl.NumJoysticks(); i++ {
 		if sdl.IsGameController(i) {
