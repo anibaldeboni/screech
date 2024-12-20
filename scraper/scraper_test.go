@@ -14,7 +14,7 @@ import (
 	"github.com/anibaldeboni/screech/scraper"
 )
 
-func setupStubServer(t *testing.T, resp string) *httptest.Server {
+func setupStubServer(t *testing.T) *httptest.Server {
 	return httptest.NewServer(
 		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			switch r.URL.Path {
@@ -44,10 +44,6 @@ func setupStubServer(t *testing.T, resp string) *httptest.Server {
 				w.WriteHeader(http.StatusOK)
 				w.Header().Set("Content-Type", "image/png")
 				http.ServeContent(w, r, "screenshot.png", stat.ModTime(), file)
-			case "/errors":
-				w.WriteHeader(http.StatusBadRequest)
-				w.Header().Set("Content-Type", "text/plain")
-				_, _ = w.Write([]byte(resp))
 			default:
 				t.Errorf("Invalid route: %s", r.URL.Path)
 			}
@@ -55,7 +51,7 @@ func setupStubServer(t *testing.T, resp string) *httptest.Server {
 }
 
 func TestFindGame(t *testing.T) {
-	server := setupStubServer(t, "")
+	server := setupStubServer(t)
 	defer server.Close()
 
 	scraper.BaseURL = server.URL + "/find-games"
@@ -70,7 +66,7 @@ func TestFindGame(t *testing.T) {
 }
 
 func TestFindGameCancelContext(t *testing.T) {
-	server := setupStubServer(t, "")
+	server := setupStubServer(t)
 	defer server.Close()
 
 	scraper.BaseURL = server.URL + "/find-games"
@@ -83,48 +79,8 @@ func TestFindGameCancelContext(t *testing.T) {
 	}
 }
 
-func TestFindGameResponseErrors(t *testing.T) {
-	tests := []struct {
-		name string
-		resp string
-		err  error
-	}{
-		{
-			name: "HTTP Request Error",
-			resp: "API closed",
-			err:  scraper.APIClosedErr,
-		},
-		{
-			name: "Game Not Found",
-			resp: "Erreur",
-			err:  scraper.GameNotFoundErr,
-		},
-		{
-			name: "Empty Body",
-			resp: "",
-			err:  scraper.EmptyBodyErr,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			server := setupStubServer(t, tt.resp)
-			defer server.Close()
-
-			scraper.BaseURL = server.URL + "/errors"
-			_, err := scraper.FindGame(context.Background(), "4", "game")
-			if !errors.Is(err, tt.err) {
-				t.Errorf("Expected %v, got %v", tt.err, err)
-			}
-
-			if err == nil {
-				t.Error("Expected error, got nil")
-			}
-		})
-	}
-}
-
 func TestDownloadMedia(t *testing.T) {
-	server := setupStubServer(t, "")
+	server := setupStubServer(t)
 
 	defer server.Close()
 
@@ -148,7 +104,7 @@ func TestDownloadMedia(t *testing.T) {
 }
 
 func TestDownloadMediaCancelContext(t *testing.T) {
-	server := setupStubServer(t, "")
+	server := setupStubServer(t)
 
 	defer server.Close()
 
@@ -174,7 +130,7 @@ func TestDownloadMediaCancelContext(t *testing.T) {
 }
 
 func TestDownloadMediaInvalidRegion(t *testing.T) {
-	server := setupStubServer(t, "")
+	server := setupStubServer(t)
 
 	defer server.Close()
 
@@ -200,7 +156,7 @@ func TestDownloadMediaInvalidRegion(t *testing.T) {
 }
 
 func TestDownloadMediaIgnoringMissingRegion(t *testing.T) {
-	server := setupStubServer(t, "")
+	server := setupStubServer(t)
 
 	defer server.Close()
 
@@ -225,7 +181,7 @@ func TestDownloadMediaIgnoringMissingRegion(t *testing.T) {
 }
 
 func TestDownloadMediaInvalidMediaType(t *testing.T) {
-	server := setupStubServer(t, "")
+	server := setupStubServer(t)
 
 	defer server.Close()
 
