@@ -60,7 +60,7 @@ systems:
     name: Atari ST
   - dir: ATOMISWAVE
     id: "53"
-    name: Atari ST
+    name: Atomiswave
   - dir: COLECO
     id: "183"
     name: Coleco
