@@ -22,20 +22,20 @@ import (
 type MediaType string
 
 var (
-	DevID                           = "1234"
-	DevPassword                     = "password"
-	BaseURL                         = "https://www.screenscraper.fr/api2/jeuInfos.php"
-	UnreadableBodyErr               = errors.New("unreadable body")
-	EmptyBodyErr                    = errors.New("empty body")
-	GameNotFoundErr                 = errors.New("game not found")
-	APIClosedErr                    = errors.New("API closed")
-	HTTPRequestErr                  = errors.New("error making HTTP request")
-	HTTPRequestAbortedErr           = errors.New("request aborted")
-	UnknownMediaTypeErr             = errors.New("unknown media type, choose among box-2D, box-3D, mixrbv1, mixrbv2")
-	Box2D                 MediaType = "box-2D"
-	Box3D                 MediaType = "box-3D"
-	MixV1                 MediaType = "mixrbv1"
-	MixV2                 MediaType = "mixrbv2"
+	DevID       = "1234"
+	DevPassword = "password"
+	BaseURL     = "https://www.screenscraper.fr/api2/jeuInfos.php"
+
+	EmptyBodyErr = errors.New("empty body")
+	// APIClosedErr          = errors.New("API closed")
+	HTTPRequestErr        = errors.New("error making HTTP request")
+	HTTPRequestAbortedErr = errors.New("request aborted")
+	UnknownMediaTypeErr   = errors.New("unknown media type, choose among box-2D, box-3D, mixrbv1, mixrbv2")
+
+	Box2D MediaType = "box-2D"
+	Box3D MediaType = "box-3D"
+	MixV1 MediaType = "mixrbv1"
+	MixV2 MediaType = "mixrbv2"
 )
 
 const maxFileSizeBytes = 104857600 // 100MB
@@ -187,22 +187,7 @@ func get(ctx context.Context, url string) ([]byte, error) {
 	}
 	defer res.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		return nil, errors.Join(UnreadableBodyErr, fmt.Errorf("error: %w", err))
-	}
-
-	s := string(body)
-	switch {
-	case strings.Contains(s, "API closed"):
-		return nil, APIClosedErr
-	case strings.Contains(s, "Erreur"):
-		return nil, errors.Join(GameNotFoundErr, fmt.Errorf(": %s", s))
-	case s == "":
-		return nil, EmptyBodyErr
-	}
-
-	return body, nil
+	return handleResponse(res)
 }
 
 func saveToDisk(dest string, file []byte) error {
