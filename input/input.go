@@ -36,11 +36,14 @@ func listenForKeyboardEvents() {
 		currentKeyState := sdl.GetKeyboardState()
 
 		for scancode, keyCode := range keyMappings {
-			if currentKeyState[scancode] != 0 && previousKeyState[scancode] == 0 {
+			isClickingMappedKey := currentKeyState[scancode] != 0
+			isNotClickingAgain := previousKeyState[scancode] == 0
+			shouldSendEvent := isNotClickingAgain || isAllowedRepeatableKey(scancode, sdl.SCANCODE_DOWN, sdl.SCANCODE_UP)
+
+			if isClickingMappedKey && shouldSendEvent {
 				InputChannel <- InputEvent{KeyCode: keyCode}
 			}
 		}
-
 		copy(previousKeyState, currentKeyState)
 		sdl.Delay(50)
 	}
@@ -68,15 +71,27 @@ func listenForControllerEvents() {
 	for {
 		sdl.PumpEvents()
 		for button, keyCode := range controllerMappings {
-			currentState := controller.Button(button) == sdl.PRESSED
-			if currentState && !previousButtonState[button] {
+			isClickingMappedKey := controller.Button(button) == sdl.PRESSED
+			isNotClickingAgain := !previousButtonState[button]
+			shouldSendEvent := isNotClickingAgain || isAllowedRepeatableKey(sdl.Scancode(button), sdl.CONTROLLER_BUTTON_DPAD_DOWN, sdl.CONTROLLER_BUTTON_DPAD_UP)
+
+			if isClickingMappedKey && shouldSendEvent {
 				InputChannel <- InputEvent{KeyCode: keyCode}
 			}
-			previousButtonState[button] = currentState
+			previousButtonState[button] = isClickingMappedKey
 		}
 
 		sdl.Delay(50)
 	}
+}
+
+func isAllowedRepeatableKey(current sdl.Scancode, allowed ...sdl.Scancode) bool {
+	for _, a := range allowed {
+		if current == a {
+			return true
+		}
+	}
+	return false
 }
 
 func openController() *sdl.GameController {

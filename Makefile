@@ -21,15 +21,15 @@ endif
 
 # Set flags based on the operating system
 ifeq ($(UNAME_S), Darwin)
-    # MacOS specific flags
-    CFLAGS = $(shell pkg-config --cflags sdl2)
-    LDFLAGS = $(shell pkg-config --libs SDL2_image SDL2_ttf) -ldl -lpthread -lm
-		CC = "aarch64-linux-gnu-gcc"
+# MacOS specific flags
+CFLAGS = $(shell pkg-config --cflags sdl2)
+LDFLAGS = $(shell pkg-config --libs SDL2_image SDL2_ttf) -ldl -lpthread -lm
+CC = "aarch64-linux-gnu-gcc"
 else ifeq ($(UNAME_S), Linux)
-    # Linux specific flags
-    CFLAGS = -I${SYSROOT}/usr/include -I/usr/aarch64-linux-gnu/include -I/usr/aarch64-linux-gnu/include/SDL2 -I/usr/include/SDL2 -D_REENTRANT
-    LDFLAGS = -L${SYSROOT}/usr/lib -L/usr/lib/aarch64-linux-gnu -lSDL2_image -lSDL2_ttf -lSDL2 -ldl -lpthread -lm
-		CC = "aarch64-linux-gnu-gcc --sysroot=${SYSROOT}"
+# Linux specific flags
+CFLAGS = -I${SYSROOT}/usr/include -I/usr/aarch64-linux-gnu/include -I/usr/aarch64-linux-gnu/include/SDL2 -I/usr/include/SDL2 -D_REENTRANT
+LDFLAGS = -L${SYSROOT}/usr/lib -L/usr/lib/aarch64-linux-gnu -lSDL2_image -lSDL2_ttf -lSDL2 -ldl -lpthread -lm
+CC = "aarch64-linux-gnu-gcc --sysroot=${SYSROOT}"
 endif
 
 .PHONY: run build package lint test
