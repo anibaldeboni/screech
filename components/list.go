@@ -1,9 +1,10 @@
 package components
 
 import (
+	"log"
+
 	"github.com/anibaldeboni/screech/config"
 	"github.com/anibaldeboni/screech/uilib"
-	"log"
 
 	"github.com/veandco/go-sdl2/sdl"
 )

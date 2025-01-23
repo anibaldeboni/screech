@@ -32,7 +32,7 @@ func NewTextView(renderer *sdl.Renderer, size TextViewSize, position sdl.Point) 
 }
 
 func (t *TextView) parseLines(text []string) []string {
-	var out []string
+	out := make([]string, 0)
 	for _, line := range text {
 		for len(line) > t.size.Width {
 			cut := t.size.Width
