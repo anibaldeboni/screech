@@ -6,11 +6,11 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-type InputEvent struct {
+type UserInputEvent struct {
 	KeyCode string
 }
 
-var InputChannel = make(chan InputEvent)
+var UserInputChannel = make(chan UserInputEvent)
 
 func StartListening() {
 	go listenForKeyboardEvents()
@@ -41,11 +41,11 @@ func listenForKeyboardEvents() {
 			shouldSendEvent := isNotClickingAgain || isAllowedRepeatableKey(scancode, sdl.SCANCODE_DOWN, sdl.SCANCODE_UP)
 
 			if isClickingMappedKey && shouldSendEvent {
-				InputChannel <- InputEvent{KeyCode: keyCode}
+				UserInputChannel <- UserInputEvent{KeyCode: keyCode}
 			}
 		}
 		copy(previousKeyState, currentKeyState)
-		sdl.Delay(50)
+		sdl.Delay(150)
 	}
 }
 
@@ -76,12 +76,12 @@ func listenForControllerEvents() {
 			shouldSendEvent := isNotClickingAgain || isAllowedRepeatableKey(sdl.Scancode(button), sdl.CONTROLLER_BUTTON_DPAD_DOWN, sdl.CONTROLLER_BUTTON_DPAD_UP)
 
 			if isClickingMappedKey && shouldSendEvent {
-				InputChannel <- InputEvent{KeyCode: keyCode}
+				UserInputChannel <- UserInputEvent{KeyCode: keyCode}
 			}
 			previousButtonState[button] = isClickingMappedKey
 		}
 
-		sdl.Delay(50)
+		sdl.Delay(150)
 	}
 }
 

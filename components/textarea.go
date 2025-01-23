@@ -91,16 +91,16 @@ func (t *TextArea) Draw(primaryColor sdl.Color) {
 			output.Printf("Error rendering text: %v\n", err)
 			return
 		}
-		defer textSurface.Free()
 
 		texture, err := t.renderer.CreateTextureFromSurface(textSurface)
 		if err != nil {
 			output.Printf("Error creating texture: %v\n", err)
 			return
 		}
-		defer func() { _ = texture.Destroy() }()
 
 		_ = t.renderer.Copy(texture, nil, &sdl.Rect{X: 40, Y: 90 + 30*int32(index), W: textSurface.W, H: textSurface.H})
+		textSurface.Free()
+		_ = texture.Destroy()
 	}
 }
 

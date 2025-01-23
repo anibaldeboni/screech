@@ -62,7 +62,7 @@ func (h *HomeScreen) InitHome() {
 	h.initialized = true
 }
 
-func (h *HomeScreen) HandleInput(event input.InputEvent) {
+func (h *HomeScreen) HandleInput(event input.UserInputEvent) {
 	switch event.KeyCode {
 	case "DOWN":
 		h.systemsList.ScrollDown()
