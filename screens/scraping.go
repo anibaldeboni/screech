@@ -308,7 +308,7 @@ download:
 						break download
 					}
 				} else {
-					events <- "Scrapped " + romName
+					events <- "Scraped " + romName
 					count.success.Add(1)
 				}
 			}
