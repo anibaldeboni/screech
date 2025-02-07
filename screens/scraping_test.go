@@ -153,7 +153,7 @@ func TestWorker(t *testing.T) {
 			hasScrapedImageFunc: func(rom string) bool {
 				return false
 			},
-			expectedEvents: []string{"Scrapped game1"},
+			expectedEvents: []string{"Scraped game1"},
 			expectedCounts: counter{success: newUint32(1), failed: newUint32(0), skipped: newUint32(0)},
 		},
 		{
@@ -299,7 +299,7 @@ func TestBuildWorkerPool(t *testing.T) {
 			hasScrapedImageFunc: func(rom string) bool {
 				return false
 			},
-			expectedEvents: []string{"Scrapped game1", "Scrapped game2", "Scraping finished.", "Success: 2", "Failed: 0", "Skipped: 0"},
+			expectedEvents: []string{"Scraped game1", "Scraped game2", "Scraping finished.", "Success: 2", "Failed: 0", "Skipped: 0"},
 			expectedCounts: counter{success: newUint32(2), failed: newUint32(0), skipped: newUint32(0)},
 		},
 		{
@@ -317,7 +317,7 @@ func TestBuildWorkerPool(t *testing.T) {
 			hasScrapedImageFunc: func(rom string) bool {
 				return false
 			},
-			expectedEvents: []string{"Scrapped game1", "Scraping finished.", "Success: 1", "Failed: 0", "Skipped: 0"},
+			expectedEvents: []string{"Scraped game1", "Scraping finished.", "Success: 1", "Failed: 0", "Skipped: 0"},
 			expectedCounts: counter{success: newUint32(1), failed: newUint32(0), skipped: newUint32(0)},
 		},
 		{
