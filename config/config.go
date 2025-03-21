@@ -60,6 +60,7 @@ type userConfigs struct {
 	MaxScanDepth            int             `yaml:"max-scan-depth"`
 	ExcludeExtensions       []string        `yaml:"exclude-extensions"`
 	IgnoreSkippedRomMessage bool            `yaml:"ignore-skipped-rom-message,omitempty"`
+	IgnoreDirs              []string        `yaml:"ignore-dirs"`
 	Debug                   bool            `yaml:"debug,omitempty"`
 }
 
@@ -109,6 +110,7 @@ var (
 		".srm",
 	}
 	IgnoreSkippedRomMessage bool
+	IgnoreDirs              []string
 )
 
 func InitVars() {
@@ -128,6 +130,7 @@ func InitVars() {
 		ExcludeExtensions = cfg.ExcludeExtensions
 	}
 	IgnoreSkippedRomMessage = cfg.IgnoreSkippedRomMessage
+	IgnoreDirs = cfg.IgnoreDirs
 	Username = cfg.Screenscraper.Username
 	Password = cfg.Screenscraper.Password
 	Threads = cfg.Screenscraper.Threads

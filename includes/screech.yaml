@@ -2,6 +2,22 @@ roms: /mnt/SDCARD/Roms/ # Path to the roms folder
 logos: /mnt/SDCARD/Icons/Default/Logos # Path to the console logos folder, should contain PNG files
 max-scan-depth: 2 # Maximum number of subdirectories to scan for roms
 ignore-skipped-rom-message: true # Do not display a message when a rom is skipped
+ignore-dirs: # Directories to ignore when scanning for roms
+  - MUSIC 
+  - VIDEOS 
+  - CANNONBALL 
+  - CAVESTORY 
+  - CHAILOVE 
+  - DINOTHAWR 
+  - DOOM 
+  - ENTERPRISE 
+  - FLASHBACK 
+  - PGM 
+  - TI83 
+  - TYRQUAKE 
+  - VIDEOTON 
+  - VMAC 
+  - XRICK
 exclude-extensions: # List of file extensions to exclude from the scan
   - ".cue"
   - ".m3u"
@@ -316,9 +332,6 @@ systems:
   - dir: VMU
     id: "23"
     name: Dreamcast VMU
-  - dir: WS
-    id: "45"
-    name: Bandai WonderSwan
   - dir: X68000
     id: "79"
     name: Sharp X68000
