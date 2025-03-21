@@ -48,7 +48,7 @@ systems:
     name: Commodore Amiga CD
   - dir: ARCADE
     id: "75"
-    name: Mame
+    name: Arcade
   - dir: ARDUBOY
     id: "263"
     name: Arduboy
@@ -114,10 +114,10 @@ systems:
     name: FBA2012
   - dir: FBALPHA
     id: "75"
-    name: FBAlpha
+    name: Final Burn Alpha
   - dir: FBNEO
     id: "75"
-    name: FBNeo
+    name: Final Burn Neo
   - dir: FC
     id: "3"
     name: NES (Famicom)
@@ -282,10 +282,10 @@ systems:
     name: Sufami Turbo
   - dir: WS
     id: "207"
-    name: Watara Supervision
+    name: WonderSwan
   - dir: WSC
-    id: "207"
-    name: Watara Supervision
+    id: "45"
+    name: WonderSwan Color
   - dir: SEGA32X
     id: "19"
     name: Sega 32X
