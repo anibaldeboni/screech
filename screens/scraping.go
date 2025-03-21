@@ -209,7 +209,7 @@ func findRoms(ctx context.Context, events chan<- string, romDirs []romDirSetting
 							if depth > maxDepth-1 || strings.HasPrefix(filepath.Base(path), ".") {
 								return filepath.SkipDir
 							}
-							events <- "Walking " + romDir.Path
+							events <- "Walking " + strings.TrimPrefix(path, config.RomsBaseDir)
 						} else {
 							roms <- Rom{
 								Name:      filepath.Base(path),
@@ -237,7 +237,7 @@ func buildWorkerPool(ctx context.Context, cancel context.CancelFunc, workers int
 	)
 
 	wg.Add(workers)
-	for i := 0; i < workers; i++ {
+	for range workers {
 		go worker(ctx, &wg, roms, events, &counter{&success, &failed, &skipped})
 	}
 

@@ -11,6 +11,8 @@ import (
 	"github.com/anibaldeboni/screech/input"
 	"github.com/anibaldeboni/screech/uilib"
 
+	"slices"
+
 	"github.com/veandco/go-sdl2/sdl"
 )
 
@@ -151,13 +153,15 @@ func romDirsToList(romDirs []RomDir) []components.Item[romDirSettings] {
 }
 
 func sortItemsAlphabetically(items []components.Item[romDirSettings]) []components.Item[romDirSettings] {
-	for i := 0; i < len(items); i++ {
-		for j := i + 1; j < len(items); j++ {
-			if items[i].Label > items[j].Label {
-				items[i], items[j] = items[j], items[i]
-			}
+	slices.SortFunc(items, func(a, b components.Item[romDirSettings]) int {
+		if a.Label < b.Label {
+			return -1
 		}
-	}
+		if a.Label > b.Label {
+			return 1
+		}
+		return 0
+	})
 	return items
 }
 
@@ -173,14 +177,14 @@ func listRomsDirs() ([]RomDir, error) {
 	}
 
 	var dirs []RomDir
-	for _, entry := range dirEntries {
-		if entry.IsDir() && !strings.HasPrefix(entry.Name(), ".") {
+	for _, entry := range filterDirs(dirEntries) {
+		if isAllowedDir(entry.Name()) {
 			dirPath := filepath.Join(config.RomsBaseDir, entry.Name())
-			dirFiles, err := os.ReadDir(dirPath)
+			subDirEntries, err := os.ReadDir(dirPath)
 			if err != nil {
 				return nil, fmt.Errorf("error reading dir %s: %w", dirPath, err)
 			}
-			if len(dirFiles) > 0 {
+			if len(subDirEntries) > 0 && hasVisibleEntries(subDirEntries) {
 				dirs = append(dirs, RomDir{
 					Name: entry.Name(),
 					Path: dirPath,
@@ -190,4 +194,27 @@ func listRomsDirs() ([]RomDir, error) {
 	}
 
 	return dirs, nil
+}
+
+func filterDirs(entries []os.DirEntry) []os.DirEntry {
+	var dirs []os.DirEntry
+	for _, entry := range entries {
+		if entry.IsDir() && !strings.HasPrefix(entry.Name(), ".") {
+			dirs = append(dirs, entry)
+		}
+	}
+	return dirs
+}
+
+func hasVisibleEntries(files []os.DirEntry) bool {
+	for _, file := range files {
+		if !strings.HasPrefix(file.Name(), ".") {
+			return true
+		}
+	}
+	return false
+}
+
+func isAllowedDir(dirName string) bool {
+	return !slices.Contains(config.IgnoreDirs, dirName)
 }
