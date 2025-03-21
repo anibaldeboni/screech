@@ -62,17 +62,14 @@ func (l *List[T]) ScrollUp() {
 		}
 	} else {
 		l.selectedIndex = len(l.items) - 1
-		l.scrollOffset = 0
+		l.scrollOffset = max(len(l.items)-l.maxVisibleItems, 0)
 	}
 }
 
 func (l *List[T]) Draw(primaryColor sdl.Color, selectedColor sdl.Color) {
 	// Draw the items
 	startIndex := l.scrollOffset
-	endIndex := startIndex + l.maxVisibleItems
-	if endIndex > len(l.items) {
-		endIndex = len(l.items)
-	}
+	endIndex := min(startIndex+l.maxVisibleItems, len(l.items))
 	visibleItems := l.items[startIndex:endIndex]
 
 	for index, item := range visibleItems {
