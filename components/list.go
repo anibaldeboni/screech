@@ -1,8 +1,9 @@
 package components
 
 import (
+	"log"
+
 	"github.com/anibaldeboni/screech/config"
-	"github.com/anibaldeboni/screech/output"
 	"github.com/anibaldeboni/screech/uilib"
 
 	"github.com/veandco/go-sdl2/sdl"
@@ -82,19 +83,19 @@ func (l *List[T]) Draw(primaryColor sdl.Color, selectedColor sdl.Color) {
 		itemText := l.itemFormatter(index+startIndex, item)
 		textSurface, err := uilib.RenderText(itemText, color, config.ListFont)
 		if err != nil {
-			output.Printf("Error rendering text: %v\n", err)
+			log.Printf("Error rendering text: %v\n", err)
 			return
 		}
-		defer textSurface.Free()
 
 		texture, err := l.renderer.CreateTextureFromSurface(textSurface)
 		if err != nil {
-			output.Printf("Error creating texture: %v\n", err)
+			log.Printf("Error creating texture: %v\n", err)
 			return
 		}
-		defer func() { _ = texture.Destroy() }()
 
 		_ = l.renderer.Copy(texture, nil, &sdl.Rect{X: l.position.X, Y: l.position.Y + 30*int32(index), W: textSurface.W, H: textSurface.H})
+		textSurface.Free()
+		_ = texture.Destroy()
 	}
 }
 

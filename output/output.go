@@ -6,9 +6,8 @@ import (
 	"github.com/anibaldeboni/screech/config"
 )
 
-func Printf(format string, a ...any) (n int, err error) {
+func Printf(format string, a ...any) {
 	if config.Debug {
-		return fmt.Printf(format, a...)
+		fmt.Printf(format, a...)
 	}
-	return 0, nil
 }

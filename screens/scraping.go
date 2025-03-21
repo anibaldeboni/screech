@@ -65,10 +65,6 @@ func SetTargetSystems(systems []romDirSettings) {
 	targetSystems = systems
 }
 
-func AddTargetSystem(system romDirSettings) {
-	targetSystems = append(targetSystems, system)
-}
-
 func (s *ScrapingScreen) InitScraping() {
 	if s.initialized {
 		return
@@ -81,18 +77,18 @@ func (s *ScrapingScreen) InitScraping() {
 	s.initialized = true
 }
 
-func (m *ScrapingScreen) HandleInput(event input.InputEvent) {
+func (s *ScrapingScreen) HandleInput(event input.UserInputEvent) {
 	switch event.KeyCode {
 	case "DOWN":
-		m.textView.ScrollDown(1)
+		s.textView.ScrollDown(1)
 	case "UP":
-		m.textView.ScrollUp(1)
+		s.textView.ScrollUp(1)
 	case "B":
-		if errors.Is(m.ctx.Err(), context.Canceled) {
+		if errors.Is(s.ctx.Err(), context.Canceled) {
 			config.CurrentScreen = "home_screen"
-			m.initialized = false
+			s.initialized = false
 		} else {
-			m.cancel()
+			s.cancel()
 		}
 	}
 }
@@ -225,7 +221,7 @@ func findRoms(ctx context.Context, events chan<- string, romDirs []romDirSetting
 						return nil
 					}
 				})
-			if err != nil && err != context.Canceled {
+			if err != nil && !errors.Is(err, context.Canceled) {
 				events <- fmt.Sprintf("Error walking the path: %v", err)
 			}
 		}

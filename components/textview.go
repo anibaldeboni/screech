@@ -1,10 +1,10 @@
 package components
 
 import (
+	"log"
 	"strings"
 
 	"github.com/anibaldeboni/screech/config"
-	"github.com/anibaldeboni/screech/output"
 	"github.com/anibaldeboni/screech/uilib"
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -32,19 +32,19 @@ func NewTextView(renderer *sdl.Renderer, size TextViewSize, position sdl.Point) 
 }
 
 func (t *TextView) parseLines(text []string) []string {
-	output := []string{}
+	out := make([]string, 0)
 	for _, line := range text {
 		for len(line) > t.size.Width {
 			cut := t.size.Width
 			if space := strings.LastIndex(line[:cut], " "); space != -1 {
 				cut = space
 			}
-			output = append(output, line[:cut])
+			out = append(out, line[:cut])
 			line = strings.TrimSpace(line[cut:])
 		}
-		output = append(output, line)
+		out = append(out, line)
 	}
-	return output
+	return out
 }
 
 func (t *TextView) SetContent(text []string) {
@@ -60,7 +60,7 @@ func (t *TextView) AddText(text string) {
 	t.GoToBottom()
 }
 
-func (t TextView) maxYOffset() int {
+func (t *TextView) maxYOffset() int {
 	return max(0, len(t.lines)-t.size.Height)
 }
 
@@ -68,11 +68,11 @@ func (t *TextView) SetYOffset(n int) {
 	t.YOffset = clamp(n, 0, t.maxYOffset())
 }
 
-func (t TextView) AtTop() bool {
+func (t *TextView) AtTop() bool {
 	return t.YOffset <= 0
 }
 
-func (t TextView) AtBottom() bool {
+func (t *TextView) AtBottom() bool {
 	return t.YOffset >= t.maxYOffset()
 }
 
@@ -96,7 +96,7 @@ func (t *TextView) GoToBottom() {
 	t.SetYOffset(t.maxYOffset())
 }
 
-func (t TextView) visibleLines() (lines []string) {
+func (t *TextView) visibleLines() (lines []string) {
 	if len(t.lines) > 0 {
 		top := max(0, t.YOffset)
 		bottom := clamp(t.YOffset+t.size.Height, top, len(t.lines))
@@ -109,19 +109,19 @@ func (t *TextView) Draw(textColor sdl.Color) {
 	for index, item := range t.visibleLines() {
 		textSurface, err := uilib.RenderText(item, textColor, config.BodyFont)
 		if err != nil {
-			output.Printf("Error rendering text: %v\n", err)
+			log.Printf("Error rendering text: %v\n", err)
 			return
 		}
-		defer textSurface.Free()
 
 		texture, err := t.renderer.CreateTextureFromSurface(textSurface)
 		if err != nil {
-			output.Printf("Error creating texture: %v\n", err)
+			log.Printf("Error creating texture: %v\n", err)
 			return
 		}
-		defer func() { _ = texture.Destroy() }()
 
 		_ = t.renderer.Copy(texture, nil, &sdl.Rect{X: t.position.X, Y: t.position.Y + 30*int32(index), W: textSurface.W, H: textSurface.H})
+		textSurface.Free()
+		_ = texture.Destroy()
 	}
 }
 

@@ -91,7 +91,7 @@ func main() {
 		"scraping_screen": scrapingScreen.Draw,
 	}
 
-	inputHandlers := map[string]func(input.InputEvent){
+	inputHandlers := map[string]func(input.UserInputEvent){
 		"home_screen":     homeScreen.HandleInput,
 		"scraping_screen": scrapingScreen.HandleInput,
 	}
@@ -114,7 +114,7 @@ func main() {
 		}
 
 		select {
-		case inputEvent := <-input.InputChannel:
+		case inputEvent := <-input.UserInputChannel:
 			if handler, ok := inputHandlers[config.CurrentScreen]; ok {
 				handler(inputEvent)
 			}
