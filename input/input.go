@@ -51,7 +51,11 @@ func listenForKeyboardEvents() {
 
 func listenForControllerEvents() {
 	controller := openController()
-	defer controller.Close()
+	defer func() {
+		if controller != nil {
+			controller.Close()
+		}
+	}()
 
 	controllerMappings := map[sdl.GameControllerButton]string{
 		sdl.CONTROLLER_BUTTON_DPAD_DOWN: "DOWN",
