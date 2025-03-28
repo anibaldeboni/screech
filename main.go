@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"runtime/debug"
@@ -11,6 +12,7 @@ import (
 	"github.com/anibaldeboni/screech/input"
 	"github.com/anibaldeboni/screech/screens"
 	"github.com/anibaldeboni/screech/uilib"
+	"github.com/anibaldeboni/screech/version"
 
 	"github.com/veandco/go-sdl2/sdl"
 )
@@ -30,6 +32,8 @@ func main() {
 			os.Exit(-1)
 		}
 	}()
+
+	fmt.Println(version.Short())
 
 	flag.StringVar(&config.ConfigFile, "config", "screech.yaml", "Path to the configuration file")
 	flag.Parse()
